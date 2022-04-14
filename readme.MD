@@ -60,3 +60,26 @@ which flex
 which bison
 which gcc
 ```
+# Requisitos para el grupo 12
+
+## Temas especiales
+* BETWEEN
+* AVG
+
+## GCI
+* POLACA INVERSA
+
+## COMANDOS IMPORTANTES
+### Generar lex.yy.c
+```
+FLEX lexico.l
+```
+### Generar archivo.exe
+```
+gcc lex.yy.c
+```
+
+### Probar archivo con archivo.exe
+```
+archivo.exe prueba.txt
+```
