@@ -145,17 +145,21 @@ ENDDEC
 ## GCI
 * POLACA INVERSA
 
-## COMANDOS IMPORTANTES
-### Generar lex.yy.c
+## PASOS PARA GENERAR EL EJECUTABLE
+1. Generar el sintáctico .y
+```
+bison -d Sintactico.y
+```
+2. Incluir el archivo generado Sintactico.tab.h en el Lexico.l
+3. Compilar con flex
 ```
 FLEX lexico.l
 ```
-### Generar archivo.exe
+4. Generar ejecutable
 ```
 gcc lex.yy.c
 ```
-
-### Probar archivo con archivo.exe
+5. Usar ejecutable contra el archivo de prueba
 ```
-archivo.exe prueba.txt
+a.exe prueba.txt
 ```
