@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "sintactico.tab.h"
+#include "y.tab.h"
 FILE  *yyin;
 int yylval;
 char *yyltext;
@@ -45,18 +45,3 @@ PC			")"
 " "             		
 "\r\n"
 .			 { printf( "ERROR LEXICO : Caracter no reconocido: %s\n", yytext ); exit (0);}
-
-%%
-
-int main (int argc, char *argv[])
-{
-    if((yyin = fopen(argv[1],"rt")) == NULL)
-    {
-        printf("/nNo se pudo abrir el archivo: %s/n",argv[1]);
-        return -1;
-    }
-    yylex();
-    fclose(yyin);
-    return 0;
-}
-        
