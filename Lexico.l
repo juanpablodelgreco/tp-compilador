@@ -39,6 +39,21 @@ OP_RES		"-"
 OP_DIV      "/"
 PA			"("
 PC			")"
+OP_LOW      "<"
+OP_GREAT    ">"
+OP_EQUAL    "=="
+OP_LE       "<="
+OP_GE       ">="    
+
+WRITE   "WRITE"|"write"
+READ    "READ"|"read"
+IF      "IF"|"if"
+ELSE    "ELSE"|"else"
+AND     "AND"|"and"
+OR      "OR"|"or"
+NOT     "NOT"|"not"
+DECVAR  "DECVAR"|"decvar"
+ENDDEC  "ENDDEC"|"enddec"
 
 %%
 
@@ -51,12 +66,6 @@ PC			")"
 {PA}			{printf("\nParAbre: %s\n", yytext);return PA;}
 {PC}			{printf("\nParCierra: %s\n", yytext);return PC;}
 {COMMENT}       {   }
-"\n"      		
-"\t"
-"\n\t"
-" "             		
-"\r\n"
-.			    { printf( "ERROR LEXICO : Caracter no reconocido: %s\n", yytext ); exit (0);}
 
 {CTE_INT}       {
                     if (checkInteger(yytext) == 1) {
@@ -81,6 +90,31 @@ PC			")"
 							return CTE_STR;
                     }
                 }
+
+{WRITE}     { printf("\nToken %s\n",yytext); return WRITE;}
+{READ}      { printf("\nToken %s\n",yytext); return READ;}
+{IF}        { printf("\nToken %s\n",yytext); return IF;}
+{ELSE}      { printf("\nToken %s\n",yytext); return ELSE;}
+{AND}       { printf("\nToken %s\n",yytext); return AND;}
+{OR}        { printf("\nToken %s\n",yytext); return OR;}
+{NOT}       { printf("\nToken %s\n",yytext); return NOT;}
+{DECVAR}    { printf("\nToken %s\n",yytext); return DECVAR;}
+{ENDDEC}    { printf("\nToken %s\n",yytext); return ENDDEC;}
+
+{OP_LOW}    { printf("\nMenorQue: %s\n",yytext); return OP_LOW;}
+{OP_GREAT}  { printf("\nMayorQue: %s\n",yytext); return OP_GREAT;}
+{OP_EQUAL}  { printf("\nIgualQue: %s\n",yytext); return OP_EQUAL;}
+{OP_LE}     { printf("\nMenorIgualQue: %s\n",yytext); return OP_LE;}
+{OP_GE}     { printf("\nMayorIgualQue: %s\n",yytext); return OP_GE;}
+
+
+
+"\n"      		
+"\t"
+"\n\t"
+" "             		
+"\r\n"
+.			    { printf( "ERROR LEXICO : Caracter no reconocido: %s\n", yytext ); exit (0);}
 
 %%
 
