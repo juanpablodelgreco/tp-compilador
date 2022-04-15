@@ -22,6 +22,25 @@ FILE  *yyin;
 %token OP_DIV
 %token PA
 %token PC
+%token READ
+%token CTE_FLOAT
+%token CTE_STR
+%token WRITE
+%token IF
+%token ELSE
+%token AND
+%token OR
+%token NOT
+%token DECVAR
+%token ENDDEC
+%token OP_LOW
+%token OP_GREAT
+%token OP_EQUAL
+%token OP_LE
+%token OP_GE
+%token CHAR_BIT
+%token FLOAT
+%token CTE_INT
 
 %%
 sentencia:  	   

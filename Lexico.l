@@ -1,15 +1,15 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
+#include <math.h>
 #include "y.tab.h"
 
 FILE  *yyin;
 int yylval;
 char *yyltext;
 char memory[50];
-
+	
 int yyerror(void);
 int checkInteger(char* str);
 int checkFloat(char* str);
@@ -30,7 +30,7 @@ CTE_FLOAT   ({NUMBER})+"."({NUMBER})*|({NUMBER})*"."({NUMBER})+
 CTE_STR     ["].[^"]+["]
 COMMENT     "-/"({LETTER}|{NUMBER}|_|SPACE|"*"|"/"|":"|"="|".")*"/-"
 INTEGER     "INTEGER"|"integer"
-Float       "FLOAT"|"float"
+FLOAT       "FLOAT"|"float"
 STRING      "STRING"|"string"
 OP_AS   	":""="
 OP_SUM		"+"
@@ -67,30 +67,12 @@ ENDDEC  "ENDDEC"|"enddec"
 {PC}			{printf("\nParCierra: %s\n", yytext);return PC;}
 {COMMENT}       {   }
 
-{CTE_INT}       {
-                    if (checkInteger(yytext) == 1) {
-                        printf("\nInteger const: %s\n", yytext);
-                        yylval.num = yytext;
-                            return CTE;
-                    }
-                }
+{CTE_INT}       {checkInteger(yytext); return CTE_INT;}
 
-{CTE_FLOAT}     {
-                    if (checkFloat(yytext) == 1) {
-                        printf("\nFloat const: %s\n", yytext);
-                        yylval.doble = yytext;
-							return CTE_FLOAT;
-                    }
-                }
+{CTE_FLOAT}     {checkFloat(yytext); return CTE_FLOAT;} 
 
-{CTE_STR}     {
-                    if (checkString(yytext) == 1) {
-                        printf("\nString const: %s\n", yytext);
-                        yylval.str_val = strdup(yytext);
-							return CTE_STR;
-                    }
-                }
-
+{CTE_STR}     {checkString(yytext); return CTE_STR;}
+ 
 {WRITE}     { printf("\nToken %s\n",yytext); return WRITE;}
 {READ}      { printf("\nToken %s\n",yytext); return READ;}
 {IF}        { printf("\nToken %s\n",yytext); return IF;}
@@ -106,8 +88,6 @@ ENDDEC  "ENDDEC"|"enddec"
 {OP_EQUAL}  { printf("\nIgualQue: %s\n",yytext); return OP_EQUAL;}
 {OP_LE}     { printf("\nMenorIgualQue: %s\n",yytext); return OP_LE;}
 {OP_GE}     { printf("\nMayorIgualQue: %s\n",yytext); return OP_GE;}
-
-
 
 "\n"      		
 "\t"
@@ -131,13 +111,13 @@ int checkInteger(char* str)
 
     exit(0);
     return 0;
-}
+};
 
 int checkFloat(char* str)
 {
     int aux = atoi(str);
       
-    if(sizeof(float) * CHAR_BIT == 32) {
+    if(sizeof(FLOAT) * CHAR_BIT == 32) {
         return 1;            
     }
 
@@ -146,7 +126,7 @@ int checkFloat(char* str)
 
     exit(0);
     return 0;
-}
+};
 
 int checkString(char* str)
 {
