@@ -32,6 +32,7 @@ COMMENT     "-/"({LETTER}|{NUMBER}|_|SPACE|"*"|"/"|":"|"="|".")*"/-"
 INTEGER     "INTEGER"|"integer"
 FLOAT       "FLOAT"|"float"
 STRING      "STRING"|"string"
+LIST		"list"|"LIST".({FLOAT}|{INTEGER}|{ID}).(",".({FLOAT}|{INTEGER}|{ID}))*
 OP_AS   	":""="
 OP_SUM		"+"
 OP_MUL      "*"
@@ -54,6 +55,8 @@ OR      "OR"|"or"
 NOT     "NOT"|"not"
 DECVAR  "DECVAR"|"decvar"
 ENDDEC  "ENDDEC"|"enddec"
+AVG		("AVERAGE"|"AVG"|"average"|"avg").{PA}.{LIST}.{PC}
+BTW		("BETWEEN"|"BTW"|"between"|"btw").{PA}.({FLOAT}|{INTEGER}|{ID}).",".({FLOAT}|{INTEGER}|{ID}).{PC}
 
 %%
 
@@ -82,6 +85,9 @@ ENDDEC  "ENDDEC"|"enddec"
 {NOT}       { printf("\nToken %s\n",yytext); return NOT;}
 {DECVAR}    { printf("\nToken %s\n",yytext); return DECVAR;}
 {ENDDEC}    { printf("\nToken %s\n",yytext); return ENDDEC;}
+{LIST}    	{ printf("\nToken %s\n",yytext); return LIST;}
+{AVG}    	{ printf("\nToken %s\n",yytext); return AVG;}
+{BTW}    	{ printf("\nToken %s\n",yytext); return BTW;}
 
 {OP_LOW}    { printf("\nMenorQue: %s\n",yytext); return OP_LOW;}
 {OP_GREAT}  { printf("\nMayorQue: %s\n",yytext); return OP_GREAT;}
