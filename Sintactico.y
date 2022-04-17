@@ -41,6 +41,9 @@ FILE  *yyin;
 %token CHAR_BIT
 %token FLOAT
 %token CTE_INT
+%token LIST
+%token AVG
+%token BTW
 
 %%
 sentencia:  	   
