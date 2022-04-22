@@ -45,15 +45,26 @@ FILE  *yyin;
 %token FLOAT
 %token CTE_INT
 %token COMA
+%token OP_ENDLINE
 
 %%
+programa: 
+	main {printf("Compilacion exitosa\n");};
+
+main: 
+	resto_programa {printf("resto_programa\n");};
+
+resto_programa: 
+			sentencia {printf("sentencia\n");} 
+			| resto_programa sentencia {printf("resto_programa sentencia\n");};
+
 sentencia:  	   
-	asignacion {printf(" FIN\n");} ;
+	asignacion {printf(" asignacion\n");} ;
 
 asignacion: 
-	ID OP_AS expresion {printf("    ID = Expresion es ASIGNACION\n");}
-	|ID OP_AS asignacion {printf("    ID = Asignacion es ASIGNACION\n");}
-	|ID OP_AS funcion {printf("    ID = Funcion es ASIGNACION\n");}
+	ID OP_AS expresion OP_ENDLINE {printf("    ID = Expresion es ASIGNACION\n");}
+	|ID OP_AS asignacion OP_ENDLINE {printf("    ID = Asignacion es ASIGNACION\n");}
+	|ID OP_AS funcion OP_ENDLINE {printf("    ID = Funcion es ASIGNACION\n");}
 	;
 
 expresion:

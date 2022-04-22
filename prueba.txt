@@ -1,1 +1,8 @@
-a=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r])
+a=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r]);
+b=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r]);
+c=avg([2,q,(p+5+c)])+BETWEEN(5+a,[2,4+r]);
+d=BETWEEN(5+a,[2,4+r]);
+a = 9;
+if(a == 0){
+   a = 3;
+}

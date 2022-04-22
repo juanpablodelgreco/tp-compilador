@@ -33,7 +33,7 @@ INTEGER     "INTEGER"|"integer"
 FLOAT       "FLOAT"|"float"
 STRING      "STRING"|"string"
 COMA		","
-OP_AS   	":""="|"="
+OP_AS   	":="|"="
 OP_SUM		"+"
 OP_MUL      "*"
 OP_RES		"-"
@@ -47,10 +47,13 @@ OP_GREAT    ">"
 OP_EQUAL    "=="
 OP_LE       "<="
 OP_GE       ">="
+OP_ENDLINE  ";"
 
 WRITE   "WRITE"|"write"
 READ    "READ"|"read"
 IF      "IF"|"if"
+FOR     "FOR"|"for"
+WHILE   "WHILE"|"while"
 ELSE    "ELSE"|"else"
 AND     "AND"|"and"
 OR      "OR"|"or"
@@ -73,6 +76,7 @@ BETWEEN 	"BETWEEN"|"between"
 {CA}			{printf("\nCorAbre: %s\n", yytext);return CA;}
 {CC}			{printf("\nCorCierra: %s\n", yytext);return CC;}
 {COMMENT}       {   }
+{OP_ENDLINE}	{printf("\nEndLine: %s\n", yytext);return OP_ENDLINE;}
 
 {CTE_INT}       {checkInteger(yytext); printf("\nConstante: %s\n", yytext); return CTE_INT;}
 
