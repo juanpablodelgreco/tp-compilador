@@ -27,24 +27,26 @@ QUOTE   	"\""
 ID			{LETTER}({LETTER}|{NUMBER})*
 CTE_INT	    {NUMBER}+
 CTE_FLOAT   ({NUMBER})+"."({NUMBER})*|({NUMBER})*"."({NUMBER})+
-CTE_STR     ["].[^"]+["]
+CTE_STR     {QUOTE}.[^"]+{QUOTE}
 COMMENT     "-/"({LETTER}|{NUMBER}|_|SPACE|"*"|"/"|":"|"="|".")*"/-"
 INTEGER     "INTEGER"|"integer"
 FLOAT       "FLOAT"|"float"
 STRING      "STRING"|"string"
-LIST		"list"|"LIST".({FLOAT}|{INTEGER}|{ID}).(",".({FLOAT}|{INTEGER}|{ID}))*
-OP_AS   	":""="
+COMA		","
+OP_AS   	":""="|"="
 OP_SUM		"+"
 OP_MUL      "*"
 OP_RES		"-"
 OP_DIV      "/"
 PA			"("
 PC			")"
+CA			"["
+CC			"]"
 OP_LOW      "<"
 OP_GREAT    ">"
 OP_EQUAL    "=="
 OP_LE       "<="
-OP_GE       ">="    
+OP_GE       ">="
 
 WRITE   "WRITE"|"write"
 READ    "READ"|"read"
@@ -55,12 +57,12 @@ OR      "OR"|"or"
 NOT     "NOT"|"not"
 DECVAR  "DECVAR"|"decvar"
 ENDDEC  "ENDDEC"|"enddec"
-AVG		("AVERAGE"|"AVG"|"average"|"avg").{PA}.{LIST}.{PC}
-BTW		("BETWEEN"|"BTW"|"between"|"btw").{PA}.({FLOAT}|{INTEGER}|{ID}).",".({FLOAT}|{INTEGER}|{ID}).{PC}
+AVG 	"AVG"|"avg"
+BETWEEN 	"BETWEEN"|"between"
+
 
 %%
 
-{ID}			{printf("\nIdentificador: %s\n", yytext);return ID;}
 {OP_SUM}		{printf("\nSuma: %s\n", yytext);return OP_SUM;}
 {OP_AS}			{printf("\nAsignacion: %s\n", yytext);return OP_AS;}
 {OP_MUL}		{printf("\nMultiplicacion: %s\n", yytext);return OP_MUL;}
@@ -68,13 +70,16 @@ BTW		("BETWEEN"|"BTW"|"between"|"btw").{PA}.({FLOAT}|{INTEGER}|{ID}).",".({FLOAT
 {OP_DIV}		{printf("\nDivision: %s\n", yytext);return OP_DIV;}
 {PA}			{printf("\nParAbre: %s\n", yytext);return PA;}
 {PC}			{printf("\nParCierra: %s\n", yytext);return PC;}
+{CA}			{printf("\nCorAbre: %s\n", yytext);return CA;}
+{CC}			{printf("\nCorCierra: %s\n", yytext);return CC;}
 {COMMENT}       {   }
 
-{CTE_INT}       {checkInteger(yytext); return CTE_INT;}
+{CTE_INT}       {checkInteger(yytext); printf("\nConstante: %s\n", yytext); return CTE_INT;}
 
-{CTE_FLOAT}     {checkFloat(yytext); return CTE_FLOAT;} 
+{CTE_FLOAT}     {checkFloat(yytext); printf("\nConstante: %s\n", yytext); return CTE_FLOAT;} 
 
-{CTE_STR}     {checkString(yytext); return CTE_STR;}
+{CTE_STR}     {checkString(yytext); printf("\nConstante: %s\n", yytext); return CTE_STR;}
+
  
 {WRITE}     { printf("\nToken %s\n",yytext); return WRITE;}
 {READ}      { printf("\nToken %s\n",yytext); return READ;}
@@ -85,15 +90,17 @@ BTW		("BETWEEN"|"BTW"|"between"|"btw").{PA}.({FLOAT}|{INTEGER}|{ID}).",".({FLOAT
 {NOT}       { printf("\nToken %s\n",yytext); return NOT;}
 {DECVAR}    { printf("\nToken %s\n",yytext); return DECVAR;}
 {ENDDEC}    { printf("\nToken %s\n",yytext); return ENDDEC;}
-{LIST}    	{ printf("\nToken %s\n",yytext); return LIST;}
-{AVG}    	{ printf("\nToken %s\n",yytext); return AVG;}
-{BTW}    	{ printf("\nToken %s\n",yytext); return BTW;}
+{COMA}    	{ printf("\nToken %s\n",yytext); return COMA;}
+{AVG}		{ printf("\nToken %s\n",yytext); return AVG;}
+{BETWEEN}	{ printf("\nToken %s\n",yytext); return BETWEEN;}
 
 {OP_LOW}    { printf("\nMenorQue: %s\n",yytext); return OP_LOW;}
 {OP_GREAT}  { printf("\nMayorQue: %s\n",yytext); return OP_GREAT;}
 {OP_EQUAL}  { printf("\nIgualQue: %s\n",yytext); return OP_EQUAL;}
 {OP_LE}     { printf("\nMenorIgualQue: %s\n",yytext); return OP_LE;}
 {OP_GE}     { printf("\nMayorIgualQue: %s\n",yytext); return OP_GE;}
+
+{ID}			{printf("\nIdentificador: %s\n", yytext);return ID;}
 
 "\n"      		
 "\t"
