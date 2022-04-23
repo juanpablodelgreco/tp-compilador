@@ -42,6 +42,8 @@ PA			"("
 PC			")"
 CA			"["
 CC			"]"
+LLA         "{"
+LLC         "}"
 OP_LOW      "<"
 OP_GREAT    ">"
 OP_EQUAL    "=="
@@ -75,6 +77,8 @@ BETWEEN 	"BETWEEN"|"between"
 {PC}			{printf("\nParCierra: %s\n", yytext);return PC;}
 {CA}			{printf("\nCorAbre: %s\n", yytext);return CA;}
 {CC}			{printf("\nCorCierra: %s\n", yytext);return CC;}
+{LLA}			{printf("\nLlaveAbre: %s\n", yytext);return LLA;}
+{LLC}			{printf("\nLlaveCierra: %s\n", yytext);return LLC;}
 {COMMENT}       {   }
 {OP_ENDLINE}	{printf("\nEndLine: %s\n", yytext);return OP_ENDLINE;}
 {INTEGER}		{printf("\nInteger: %s\n", yytext);return INTEGER;}

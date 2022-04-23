@@ -22,6 +22,8 @@ FILE  *yyin;
 %token PC
 %token CA
 %token CC
+%token LLA
+%token LLC
 %token READ
 %token CTE_FLOAT
 %token CTE_STR
@@ -41,7 +43,6 @@ FILE  *yyin;
 %token OP_LE
 %token OP_GE
 %token CHAR_BIT
-%token FLOAT
 %token CTE_INT
 %token COMA
 %token OP_ENDLINE
@@ -61,7 +62,9 @@ resto_programa:
 			| resto_programa sentencia {printf("resto_programa sentencia\n");};
 
 sentencia:  	   
-	asignacion {printf(" asignacion\n");} ;
+	asignacion {printf(" asignacion\n");} 
+	| if {printf(" if\n");}
+	;
 
 asignacion: 
 	ID OP_AS expresion OP_ENDLINE {printf("    ID = Expresion es ASIGNACION\n");}
@@ -112,9 +115,56 @@ average:
 
 between:
 	BETWEEN PA expresion COMA CA expresion COMA expresion CC PC
+	;
 
+write:
+    WRITE CTE_STR
+	|WRITE ID
+    ;
+
+read: 
+	READ ID
+	;
+
+operador_comparacion:
+	OP_LOW
+	| OP_GREAT
+	| OP_EQUAL
+	| OP_LE
+	| OP_GE
+	;
+
+operador_logico:
+	AND
+	| OR
+	;
+
+operador_negacion:
+	NOT
+	;
+
+comparacion:
+	expresion operador_comparacion expresion
+	| expresion operador_comparacion expresion operador_comparacion expresion
+	;
+
+if:
+	IF PA operador_negacion PA comparacion PC PC bloque_ejecucion
+	| IF PA comparacion PC bloque_ejecucion
+	| IF PA comparacion operador_logico comparacion PC bloque_ejecucion
+	| IF PA operador_negacion PA comparacion PC PC bloque_ejecucion else
+	| IF PA comparacion PC bloque_ejecucion else
+	| IF PA comparacion operador_logico comparacion PC bloque_ejecucion else
+	;
+
+else:
+	ELSE bloque_ejecucion
+	;
+
+bloque_ejecucion:
+	LLA resto_programa LLC
+	;
 %%
-
 
 int main(int argc, char *argv[])
 {
