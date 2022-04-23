@@ -1,3 +1,7 @@
+DECVAR
+<a,b,c>:integer
+<e>:string
+ENDDEC
 a=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r]);
 b=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r]);
 c=avg([2,q,(p+5+c)])+BETWEEN(5+a,[2,4+r]);
@@ -10,4 +14,7 @@ if(a == 0 AND b == 1){
 }
 if(NOT (1 == 1)) {
    a = 5;
+}
+while(a == 1) {
+   d=10;
 }

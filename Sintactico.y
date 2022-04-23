@@ -32,6 +32,7 @@ FILE  *yyin;
 %token WRITE
 %token IF
 %token ELSE
+%token WHILE
 %token AND
 %token OR
 %token NOT
@@ -49,21 +50,37 @@ FILE  *yyin;
 %token INTEGER
 %token FLOAT
 %token STRING
+%token QUOTE
+%token OP_DP
 
 %%
 programa: 
 	main {printf("Compilacion exitosa\n");};
 
 main: 
-	resto_programa {printf("resto_programa\n");};
+	DECVAR bloque_declaraciones ENDDEC resto_programa {printf("resto_programa\n");};
+
+lista_variables:
+	ID | lista_variables COMA ID 
+	;
+
+bloque_declaraciones:
+	OP_LOW lista_variables OP_GREAT OP_DP tipo
+	| bloque_declaraciones OP_LOW lista_variables OP_GREAT OP_DP tipo
+	;
+
+tipo:
+	INTEGER | FLOAT | STRING
+	;
 
 resto_programa: 
-			sentencia {printf("sentencia\n");} 
-			| resto_programa sentencia {printf("resto_programa sentencia\n");};
+	sentencia {printf("sentencia\n");} 
+	| resto_programa sentencia {printf("resto_programa sentencia\n");};
 
 sentencia:  	   
 	asignacion {printf(" asignacion\n");} 
 	| if {printf(" if\n");}
+	| while {printf(" while\n");}
 	;
 
 asignacion: 
@@ -76,6 +93,7 @@ expresion:
 	termino {printf("    Termino es Expresion\n");}
 	|expresion OP_SUM termino {printf("    Expresion+Termino es Expresion\n");}
 	|expresion OP_RES termino {printf("    Expresion-Termino es Expresion\n");}
+	|CTE_STR {printf("    CTE_STR es Expresion\n");}
 	;
 
 termino: 
@@ -146,6 +164,12 @@ operador_negacion:
 comparacion:
 	expresion operador_comparacion expresion
 	| expresion operador_comparacion expresion operador_comparacion expresion
+	;
+
+while:
+	WHILE PA operador_negacion PA comparacion PC PC bloque_ejecucion
+	| WHILE PA comparacion PC bloque_ejecucion
+	| WHILE PA comparacion operador_logico comparacion PC bloque_ejecucion
 	;
 
 if:

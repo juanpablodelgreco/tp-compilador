@@ -23,11 +23,10 @@ int checkString(char* str);
 NUMBER		[0-9]
 LETTER	    [a-zA-Z]
 SPACE		[" "]
-QUOTE   	"\""
 ID			{LETTER}({LETTER}|{NUMBER})*
 CTE_INT	    {NUMBER}+
 CTE_FLOAT   ({NUMBER})+"."({NUMBER})*|({NUMBER})*"."({NUMBER})+
-CTE_STR     {QUOTE}.[^"]+{QUOTE}
+CTE_STR     {QUOTE}.[^"]+.{QUOTE}
 COMMENT     "-/"({LETTER}|{NUMBER}|_|SPACE|"*"|"/"|":"|"="|".")*"/-"
 INTEGER     "INTEGER"|"integer"
 FLOAT       "FLOAT"|"float"
@@ -38,6 +37,7 @@ OP_SUM		"+"
 OP_MUL      "*"
 OP_RES		"-"
 OP_DIV      "/"
+OP_DP       ":"
 PA			"("
 PC			")"
 CA			"["
@@ -50,11 +50,11 @@ OP_EQUAL    "=="
 OP_LE       "<="
 OP_GE       ">="
 OP_ENDLINE  ";"
+QUOTE   	"\""
 
 WRITE   "WRITE"|"write"
 READ    "READ"|"read"
 IF      "IF"|"if"
-FOR     "FOR"|"for"
 WHILE   "WHILE"|"while"
 ELSE    "ELSE"|"else"
 AND     "AND"|"and"
@@ -96,6 +96,7 @@ BETWEEN 	"BETWEEN"|"between"
 {READ}      { printf("\nToken %s\n",yytext); return READ;}
 {IF}        { printf("\nToken %s\n",yytext); return IF;}
 {ELSE}      { printf("\nToken %s\n",yytext); return ELSE;}
+{WHILE}     { printf("\nToken %s\n",yytext); return WHILE;}
 {AND}       { printf("\nToken %s\n",yytext); return AND;}
 {OR}        { printf("\nToken %s\n",yytext); return OR;}
 {NOT}       { printf("\nToken %s\n",yytext); return NOT;}
@@ -110,6 +111,8 @@ BETWEEN 	"BETWEEN"|"between"
 {OP_EQUAL}  { printf("\nIgualQue: %s\n",yytext); return OP_EQUAL;}
 {OP_LE}     { printf("\nMenorIgualQue: %s\n",yytext); return OP_LE;}
 {OP_GE}     { printf("\nMayorIgualQue: %s\n",yytext); return OP_GE;}
+{QUOTE}     { printf("\nComillas: %s\n",yytext); return QUOTE;}
+{OP_DP}     { printf("\nDos puntos: %s\n",yytext); return OP_DP;}
 
 {ID}			{printf("\nIdentificador: %s\n", yytext);return ID;}
 
