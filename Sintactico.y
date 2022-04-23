@@ -10,7 +10,6 @@ FILE  *yyin;
   int yyerror();
   int yylex();
 
-
 %}
 
 %token ID
@@ -46,6 +45,9 @@ FILE  *yyin;
 %token CTE_INT
 %token COMA
 %token OP_ENDLINE
+%token INTEGER
+%token FLOAT
+%token STRING
 
 %%
 programa: 
@@ -116,23 +118,20 @@ between:
 
 int main(int argc, char *argv[])
 {
-    if((yyin = fopen(argv[1], "rt"))==NULL)
-    {
+    if ((yyin = fopen(argv[1], "rt")) == NULL) {
         printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
        
+    } else { 
+    	yyparse();
     }
-    else
-    { 
-        
-        yyparse();
-        
-    }
+
 	fclose(yyin);
-        return 0;
+    return 0;
 }
+
 int yyerror(void)
-     {
-       printf("Error Sintactico\n");
-	 exit (1);
-     }
+{
+    printf("Error Sintactico\n");
+	exit (1);
+}
 

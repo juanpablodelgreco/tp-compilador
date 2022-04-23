@@ -77,6 +77,9 @@ BETWEEN 	"BETWEEN"|"between"
 {CC}			{printf("\nCorCierra: %s\n", yytext);return CC;}
 {COMMENT}       {   }
 {OP_ENDLINE}	{printf("\nEndLine: %s\n", yytext);return OP_ENDLINE;}
+{INTEGER}		{printf("\nInteger: %s\n", yytext);return INTEGER;}
+{FLOAT}		    {printf("\nFloat: %s\n", yytext);return FLOAT;}
+{STRING}		{printf("\nString: %s\n", yytext);return STRING;}
 
 {CTE_INT}       {checkInteger(yytext); printf("\nConstante: %s\n", yytext); return CTE_INT;}
 
