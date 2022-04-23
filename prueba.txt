@@ -1,6 +1,6 @@
 DECVAR
-<a,b,c>:integer
-<e>:string
+a,b,c:integer
+e:string
 ENDDEC
 a=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r]);
 b=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r]);

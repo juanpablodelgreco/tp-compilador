@@ -65,8 +65,8 @@ lista_variables:
 	;
 
 bloque_declaraciones:
-	OP_LOW lista_variables OP_GREAT OP_DP tipo
-	| bloque_declaraciones OP_LOW lista_variables OP_GREAT OP_DP tipo
+	lista_variables OP_DP tipo
+	| bloque_declaraciones lista_variables OP_DP tipo
 	;
 
 tipo:
