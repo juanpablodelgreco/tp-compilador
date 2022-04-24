@@ -8,7 +8,7 @@ int yystopparser=0;
 FILE  *yyin;
 
   int yyerror();
-  int yylex();
+  int yylex(); // ?? esto
 
 %}
 
@@ -193,18 +193,6 @@ bloque_ejecucion:
 	;
 %%
 
-int main(int argc, char *argv[])
-{
-    if ((yyin = fopen(argv[1], "rt")) == NULL) {
-        printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
-	
-    } else { 
-    	yyparse();
-    }
-
-	fclose(yyin);
-  return 0;
-}
 
 int yyerror(void)
 {

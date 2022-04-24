@@ -4,16 +4,28 @@
 #include <string.h>
 #include <math.h>
 #include "y.tab.h"
+#define MAX_REGS 1000
 
+typedef struct {
+    char lexeme[50];
+    char datatype[50];
+    char value[50];
+    int length;
+} t_symbol_table;
+
+t_symbol_table symbol_table[MAX_REGS];
+int table_regs = 0;
 FILE  *yyin;
 int yylval;
 char *yyltext;
 char memory[50];
 	
-int yyerror(void);
+int yyerror(void); // ?? esto
 int checkInteger(char* str);
 int checkFloat(char* str);
 int checkString(char* str);
+void pushSymbolTable(char* str, int is_cte);
+void showSymbolTable();
 
 %}
 
@@ -22,7 +34,6 @@ int checkString(char* str);
 
 NUMBER		[0-9]
 LETTER	    [a-zA-Z]
-SPACE		[" "]
 ID			{LETTER}({LETTER}|{NUMBER})*
 CTE_INT	    {NUMBER}+
 CTE_FLOAT   ({NUMBER})+"."({NUMBER})*|({NUMBER})*"."({NUMBER})+
@@ -85,11 +96,11 @@ BETWEEN 	"BETWEEN"|"between"
 {FLOAT}		    {printf("\nFloat: %s\n", yytext);return FLOAT;}
 {STRING}		{printf("\nString: %s\n", yytext);return STRING;}
 
-{CTE_INT}       {checkInteger(yytext); printf("\nConstante: %s\n", yytext); return CTE_INT;}
+{CTE_INT}       {checkInteger(yytext); printf("\nConstante: %s\n", yytext); pushSymbolTable(yytext,1); return CTE_INT;}
 
-{CTE_FLOAT}     {checkFloat(yytext); printf("\nConstante: %s\n", yytext); return CTE_FLOAT;} 
+{CTE_FLOAT}     {checkFloat(yytext); printf("\nConstante: %s\n", yytext); pushSymbolTable(yytext,1); return CTE_FLOAT;} 
 
-{CTE_STR}     {checkString(yytext); printf("\nConstante: %s\n", yytext); return CTE_STR;}
+{CTE_STR}     {checkString(yytext); printf("\nConstante: %s\n", yytext);  pushSymbolTable(yytext,1); return CTE_STR;}
 
  
 {WRITE}     { printf("\nToken %s\n",yytext); return WRITE;}
@@ -114,7 +125,7 @@ BETWEEN 	"BETWEEN"|"between"
 {QUOTE}     { printf("\nComillas: %s\n",yytext); return QUOTE;}
 {OP_DP}     { printf("\nDos puntos: %s\n",yytext); return OP_DP;}
 
-{ID}			{printf("\nIdentificador: %s\n", yytext);return ID;}
+{ID}			{printf("\nIdentificador: %s\n", yytext); pushSymbolTable(yytext,0); return ID;}
 
 "\n"      		
 "\t"
@@ -167,3 +178,46 @@ int checkString(char* str)
     exit(0);
     return 0;
 };
+
+void pushSymbolTable(char* str, int is_cte){
+    int i=0, duplicate=0;
+    while(i<table_regs && i<MAX_REGS && !duplicate)
+    {
+        if(!strcmp(symbol_table[i].lexeme,str)){
+            duplicate = 1;
+        }
+        i++;
+    }
+    if(!duplicate)
+    {
+        symbol_table[table_regs].length = strlen(str);
+        strcpy(symbol_table[table_regs].lexeme,str);
+        if(is_cte){
+            strcpy(symbol_table[table_regs].value,str);
+        }
+        table_regs++;
+    }
+};
+
+int main(int argc, char *argv[])
+{
+    if ((yyin = fopen(argv[1], "rt")) == NULL) {
+        printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
+	
+    } else { 
+    	yyparse();
+    }
+    // symbolTableToFile function
+    showSymbolTable();
+	fclose(yyin);
+  return 0;
+}
+
+void showSymbolTable(){
+    int i;
+    printf("\n---Symbol Table---\n");
+    printf("\n%8s\t%8s\t%8s\t%8s\n","lexeme","value","datatype","length");
+    for(i=0; i<table_regs; i++){
+        printf("\n%8s\t%8s\t%8s\t%8d\n",symbol_table[i].lexeme,symbol_table[i].value,symbol_table[i].datatype,symbol_table[i].length);
+    }
+}
