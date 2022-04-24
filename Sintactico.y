@@ -81,6 +81,8 @@ sentencia:
 	asignacion {printf(" asignacion\n");} 
 	| if {printf(" if\n");}
 	| while {printf(" while\n");}
+	| write {printf(" write\n");}
+	| read {printf(" read\n");}
 	;
 
 asignacion: 
@@ -132,7 +134,7 @@ average:
 	;
 
 between:
-	BETWEEN PA expresion COMA CA expresion COMA expresion CC PC
+	BETWEEN PA expresion COMA CA expresion COMA expresion CC PC {printf("     BETWEEN(id,lista) es between\n");}
 	;
 
 write:
@@ -164,6 +166,7 @@ operador_negacion:
 comparacion:
 	expresion operador_comparacion expresion
 	| expresion operador_comparacion expresion operador_comparacion expresion
+	| between
 	;
 
 while:
@@ -174,10 +177,10 @@ while:
 
 if:
 	IF PA operador_negacion PA comparacion PC PC bloque_ejecucion
-	| IF PA comparacion PC bloque_ejecucion
-	| IF PA comparacion operador_logico comparacion PC bloque_ejecucion
 	| IF PA operador_negacion PA comparacion PC PC bloque_ejecucion else
+	| IF PA comparacion PC bloque_ejecucion
 	| IF PA comparacion PC bloque_ejecucion else
+	| IF PA comparacion operador_logico comparacion PC bloque_ejecucion
 	| IF PA comparacion operador_logico comparacion PC bloque_ejecucion else
 	;
 
@@ -194,13 +197,13 @@ int main(int argc, char *argv[])
 {
     if ((yyin = fopen(argv[1], "rt")) == NULL) {
         printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
-       
+	
     } else { 
     	yyparse();
     }
 
 	fclose(yyin);
-    return 0;
+  return 0;
 }
 
 int yyerror(void)
