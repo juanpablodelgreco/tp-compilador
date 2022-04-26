@@ -19,13 +19,14 @@ FILE  *yyin;
 int yylval;
 char *yyltext;
 char memory[50];
-	
-int yyerror(void); // ?? esto
+
+int yyparse();
 int checkInteger(char* str);
 int checkFloat(char* str);
 int checkString(char* str);
 void pushSymbolTable(char* str, int is_cte);
 void showSymbolTable();
+int crear_TS();
 
 %}
 
@@ -168,7 +169,7 @@ int checkFloat(char* str)
 
 int checkString(char* str)
 {
-    if(strlen(str) <= 30) { // PREGUNTAR SI LAS COMILLAS CUENTAN COMO CARACTERES DE LA CADENA, DE SER ASI CAMBIAR 30 POR 32.
+    if(strlen(str) <= 32) {
         return 1;            
     }
 
@@ -203,12 +204,12 @@ int main(int argc, char *argv[])
 {
     if ((yyin = fopen(argv[1], "rt")) == NULL) {
         printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
-	
     } else { 
     	yyparse();
     }
-    // symbolTableToFile function
-    showSymbolTable();
+
+    // showSymbolTable(); Función para realizar el debug de la tabla de simbolos.
+    crear_TS();
 	fclose(yyin);
   return 0;
 }
@@ -216,8 +217,28 @@ int main(int argc, char *argv[])
 void showSymbolTable(){
     int i;
     printf("\n---Symbol Table---\n");
-    printf("\n%8s\t%8s\t%8s\t%8s\n","lexeme","value","datatype","length");
+    printf("\n%8s\t%8s\t%8s\t%8s\n","Name","Value","Datatype","Length");
     for(i=0; i<table_regs; i++){
         printf("\n%8s\t%8s\t%8s\t%8d\n",symbol_table[i].lexeme,symbol_table[i].value,symbol_table[i].datatype,symbol_table[i].length);
     }
+}
+
+int crear_TS(){
+    int i;
+	FILE *pf; 
+	pf = fopen("ts.txt","w+"); 
+	char* tipo;
+	
+	if (!pf) {
+        return 1;
+    }
+
+    fprintf(pf, "\n%8s\t%8s\t%8s\t%8s\n","Name","Value","Datatype","Length");
+    for(i = 0; i < table_regs; i++) {
+        fprintf(pf, "\n%8s\t%8s\t%8s\t%8d\n",symbol_table[i].lexeme,symbol_table[i].value,symbol_table[i].datatype,symbol_table[i].length);
+    }
+
+    fclose(pf);
+
+    return 0;
 }

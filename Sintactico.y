@@ -1,5 +1,3 @@
-// Usa Lexico_ClasePractica
-//Solo expresiones sin ()
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +6,7 @@ int yystopparser=0;
 FILE  *yyin;
 
   int yyerror();
-  int yylex(); // ?? esto
+  int yylex();
 
 %}
 
