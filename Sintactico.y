@@ -56,7 +56,9 @@ programa:
 	main {printf("Compilacion exitosa\n");};
 
 main: 
-	DECVAR bloque_declaraciones ENDDEC resto_programa {printf("resto_programa\n");};
+	DECVAR bloque_declaraciones ENDDEC resto_programa {printf("resto_programa\n");}
+	| DECVAR bloque_declaraciones ENDDEC
+	;
 
 lista_variables:
 	ID | lista_variables COMA ID 
