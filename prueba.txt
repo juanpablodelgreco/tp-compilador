@@ -8,7 +8,7 @@ b=(2+avg([2,q,(p+5+c)])+5)+BETWEEN(5+a,[2,4+r]);
 c=avg([2,q,(p+5+c)])+BETWEEN(5+a,[2,4+r]);
 d=BETWEEN(5+a,[2,4+r]);
 a = 9;
-f=1.0;
+f = 1.0;
 if(a == 0 AND b == 1){
    a = 3;
 } else {
@@ -23,3 +23,5 @@ while(a == 1) {
 if(BETWEEN(a,[b+3,4+w])){
    z = 6;
 }
+
+-/ Así son los comentarios de LyC /-

@@ -33,13 +33,17 @@ int crear_TS();
 %option noyywrap  
 %option yylineno 
 
+SPACE       [" "]
 NUMBER		[0-9]
 LETTER	    [a-zA-Z]
 ID			{LETTER}({LETTER}|{NUMBER})*
 CTE_INT	    {NUMBER}+
 CTE_FLOAT   ({NUMBER})+"."({NUMBER})*|({NUMBER})*"."({NUMBER})+
 CTE_STR     {QUOTE}.[^"]+.{QUOTE}
-COMMENT     "-/"({LETTER}|{NUMBER}|_|SPACE|"*"|"/"|":"|"="|".")*"/-"
+COMMENT_OP  "-/"
+COMMENT_IN  [^"]
+COMMENT_CL  "/-"
+COMMENT     {COMMENT_OP}+{COMMENT_IN}*{COMMENT_CL}+
 INTEGER     "INTEGER"|"integer"
 FLOAT       "FLOAT"|"float"
 STRING      "STRING"|"string"

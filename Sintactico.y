@@ -85,34 +85,34 @@ sentencia:
 
 asignacion: 
 	ID OP_AS expresion OP_ENDLINE {printf("    ID = Expresion es ASIGNACION\n");}
-	|ID OP_AS asignacion OP_ENDLINE {printf("    ID = Asignacion es ASIGNACION\n");}
-	|ID OP_AS funcion OP_ENDLINE {printf("    ID = Funcion es ASIGNACION\n");}
+	| ID OP_AS asignacion OP_ENDLINE {printf("    ID = Asignacion es ASIGNACION\n");}
+	| ID OP_AS funcion OP_ENDLINE {printf("    ID = Funcion es ASIGNACION\n");}
 	;
 
 expresion:
 	termino {printf("    Termino es Expresion\n");}
-	|expresion OP_SUM termino {printf("    Expresion+Termino es Expresion\n");}
-	|expresion OP_RES termino {printf("    Expresion-Termino es Expresion\n");}
-	|CTE_STR {printf("    CTE_STR es Expresion\n");}
+	| expresion OP_SUM termino {printf("    Expresion+Termino es Expresion\n");}
+	| expresion OP_RES termino {printf("    Expresion-Termino es Expresion\n");}
+	| CTE_STR {printf("    CTE_STR es Expresion\n");}
 	;
 
 termino: 
    factor {printf("    Factor es Termino\n");}
-   |termino OP_MUL factor {printf("     Termino*Factor es Termino\n");}
-   |termino OP_DIV factor {printf("     Termino/Factor es Termino\n");}
+   | termino OP_MUL factor {printf("     Termino*Factor es Termino\n");}
+   | termino OP_DIV factor {printf("     Termino/Factor es Termino\n");}
    ;
    
 factor: 
 	ID {printf("    ID es Factor \n");}
-	|CTE_INT {printf("    CTE es Factor\n");}
-	|CTE_FLOAT {printf("    CTE es Factor\n");}
-	|PA expresion PC {printf("    Expresion entre parentesis es Factor\n");}
-	|funcion {printf("    funcion es Factor\n");}
+	| CTE_INT {printf("    CTE es Factor\n");}
+	| CTE_FLOAT {printf("    CTE es Factor\n");}
+	| PA expresion PC {printf("    Expresion entre parentesis es Factor\n");}
+	| funcion {printf("    funcion es Factor\n");}
 	;
 	
 funcion:
 	average {printf("     average es funcion\n");}
-	|between {printf("     between es funcion\n");}
+	| between {printf("     between es funcion\n");}
 	;
 
 lista:
@@ -120,7 +120,7 @@ lista:
 
 elementos:
 	elemento 
-	|elemento COMA elementos 
+	| elemento COMA elementos 
 	;
 	
 elemento:
@@ -137,11 +137,11 @@ between:
 
 write:
     WRITE CTE_STR
-	|WRITE ID
+	| WRITE ID
     ;
 
 read: 
-	READ ID
+	READ ID OP_ENDLINE
 	;
 
 operador_comparacion:
