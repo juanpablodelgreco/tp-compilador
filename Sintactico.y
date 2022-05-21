@@ -56,8 +56,9 @@ programa:
 	main {printf("Compilacion exitosa\n");};
 
 main: 
-	DECVAR bloque_declaraciones ENDDEC resto_programa {printf("resto_programa\n");}
-	| DECVAR bloque_declaraciones ENDDEC
+	declaraciones resto_programa {printf("resto_programa\n");}
+	| declaraciones
+	| resto_programa
 	;
 
 lista_variables:
@@ -71,6 +72,10 @@ bloque_declaraciones:
 
 tipo:
 	INTEGER | FLOAT | STRING
+	;
+
+declaraciones:
+	DECVAR bloque_declaraciones ENDDEC {printf("declaraciones\n");}
 	;
 
 resto_programa: 
@@ -138,8 +143,8 @@ between:
 	;
 
 write:
-    WRITE CTE_STR
-	| WRITE ID
+    WRITE CTE_STR OP_ENDLINE
+	| WRITE ID OP_ENDLINE
     ;
 
 read: 
