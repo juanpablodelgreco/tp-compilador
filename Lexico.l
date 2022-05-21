@@ -75,7 +75,7 @@ NOT     "NOT"|"not"
 DECVAR  "DECVAR"|"decvar"
 ENDDEC  "ENDDEC"|"enddec"
 AVG 	"AVG"|"avg"
-BETWEEN 	"BETWEEN"|"between"
+BETWEEN "BETWEEN"|"between"
 
 
 %%
@@ -141,7 +141,7 @@ int checkInteger(char* str)
 {
     int aux = atoi(str);
       
-    if(aux>=0 && aux<=65535) {
+    if(aux>=-65535 && aux<=65535) {
         return 1;            
     }
 
@@ -154,9 +154,9 @@ int checkInteger(char* str)
 
 int checkFloat(char* str)
 {
-    int aux = atoi(str);
+    int aux = atof(str);
       
-    if(sizeof(FLOAT) * CHAR_BIT == 32) {
+    if(aux >= -1.17549e-38 && aux <= 3.40282e+38) {
         return 1;            
     }
 
