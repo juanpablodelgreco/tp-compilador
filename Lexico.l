@@ -33,13 +33,17 @@ int crear_TS();
 %option noyywrap  
 %option yylineno 
 
+SPACE       [" "]
 NUMBER		[0-9]
 LETTER	    [a-zA-Z]
 ID			{LETTER}({LETTER}|{NUMBER})*
 CTE_INT	    {NUMBER}+
 CTE_FLOAT   ({NUMBER})+"."({NUMBER})*|({NUMBER})*"."({NUMBER})+
 CTE_STR     {QUOTE}.[^"]+.{QUOTE}
-COMMENT     "-/"({LETTER}|{NUMBER}|_|SPACE|"*"|"/"|":"|"="|".")*"/-"
+COMMENT_OP  "-/"
+COMMENT_IN  [^"]
+COMMENT_CL  "/-"
+COMMENT     {COMMENT_OP}+{COMMENT_IN}*{COMMENT_CL}+
 INTEGER     "INTEGER"|"integer"
 FLOAT       "FLOAT"|"float"
 STRING      "STRING"|"string"
@@ -75,7 +79,7 @@ NOT     "NOT"|"not"
 DECVAR  "DECVAR"|"decvar"
 ENDDEC  "ENDDEC"|"enddec"
 AVG 	"AVG"|"avg"
-BETWEEN 	"BETWEEN"|"between"
+BETWEEN "BETWEEN"|"between"
 
 
 %%
@@ -141,7 +145,7 @@ int checkInteger(char* str)
 {
     int aux = atoi(str);
       
-    if(aux>=0 && aux<=65535) {
+    if(aux>=-65535 && aux<=65535) {
         return 1;            
     }
 
@@ -154,9 +158,9 @@ int checkInteger(char* str)
 
 int checkFloat(char* str)
 {
-    int aux = atoi(str);
+    int aux = atof(str);
       
-    if(sizeof(FLOAT) * CHAR_BIT == 32) {
+    if(aux >= -1.17549e-38 && aux <= 3.40282e+38) {
         return 1;            
     }
 
