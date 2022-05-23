@@ -1,0 +1,19 @@
+DECVAR
+a,b,c:integer
+e:string
+f:float
+d:integer
+ENDDEC
+READ a;
+WRITE "hello world";
+f=(2+avg([2,(1+5+1.2)])+5);
+d=1.1;
+if(BETWEEN(a,[b+3,4+a])){
+   c = 6;
+}
+if(NOT (1 == 1)) {
+   a = 5;
+}
+while(a == 1) {
+   d=10;
+}
