@@ -1,0 +1,48 @@
+
+    Name	   Value	Datatype	  Length
+
+       a	        	VARIABLE	       1
+
+       b	        	VARIABLE	       1
+
+       c	        	VARIABLE	       1
+
+       e	        	VARIABLE	       1
+
+       f	        	VARIABLE	       1
+
+"hello world"	"hello world"	  STRING	      13
+
+       2	       2	 INTEGER	       1
+
+       q	        	VARIABLE	       1
+
+       p	        	VARIABLE	       1
+
+       5	       5	 INTEGER	       1
+
+       4	       4	 INTEGER	       1
+
+       r	        	VARIABLE	       1
+
+       d	        	VARIABLE	       1
+
+       9	       9	 INTEGER	       1
+
+     1.0	     1.0	   FLOAT	       3
+
+       0	       0	 INTEGER	       1
+
+       1	       1	 INTEGER	       1
+
+       3	       3	 INTEGER	       1
+
+       8	       8	 INTEGER	       1
+
+      10	      10	 INTEGER	       2
+
+       w	        	VARIABLE	       1
+
+       z	        	VARIABLE	       1
+
+       6	       6	 INTEGER	       1
