@@ -65,6 +65,7 @@ OP_GREAT    ">"
 OP_EQUAL    "=="
 OP_LE       "<="
 OP_GE       ">="
+OP_NE       "!="
 OP_ENDLINE  ";"
 QUOTE   	"\""
 
@@ -122,11 +123,12 @@ BETWEEN "BETWEEN"|"between"
 {AVG}		{ printf("\nToken %s\n",yytext); return AVG;}
 {BETWEEN}	{ printf("\nToken %s\n",yytext); return BETWEEN;}
 
-{OP_LOW}    { printf("\nMenorQue: %s\n",yytext); return OP_LOW;}
-{OP_GREAT}  { printf("\nMayorQue: %s\n",yytext); return OP_GREAT;}
-{OP_EQUAL}  { printf("\nIgualQue: %s\n",yytext); return OP_EQUAL;}
-{OP_LE}     { printf("\nMenorIgualQue: %s\n",yytext); return OP_LE;}
-{OP_GE}     { printf("\nMayorIgualQue: %s\n",yytext); return OP_GE;}
+{OP_LOW}    { printf("\nMenorQue: %s\n",yytext); yylval.vals=strdup(yytext); return OP_LOW;}
+{OP_GREAT}  { printf("\nMayorQue: %s\n",yytext); yylval.vals=strdup(yytext); return OP_GREAT;}
+{OP_EQUAL}  { printf("\nIgualQue: %s\n",yytext); yylval.vals=strdup(yytext); return OP_EQUAL;}
+{OP_LE}     { printf("\nMenorIgualQue: %s\n",yytext); yylval.vals=strdup(yytext); return OP_LE;}
+{OP_NE}     { printf("\nDistintoQue: %s\n",yytext); yylval.vals=strdup(yytext); return OP_NE;}
+{OP_GE}     { printf("\nMayorIgualQue: %s\n",yytext); yylval.vals=strdup(yytext); return OP_GE;}
 {QUOTE}     { printf("\nComillas: %s\n",yytext); return QUOTE;}
 {OP_DP}     { printf("\nDos puntos: %s\n",yytext); return OP_DP;}
 

@@ -19,9 +19,38 @@
 
 /* enums */
 enum tipoSalto{
-		normal,
-		inverso
-	};
+	normal,
+	inverso
+};
+
+enum and_or{
+	and,
+	or,
+	condicionSimple
+};
+
+enum tipoDato{
+	tipoInt,
+	tipoFloat,
+	tipoString,
+	sinTipo
+};
+
+typedef struct
+{
+	int cantExpresiones;
+	int salto1;
+	int salto2;
+	int saltoElse;
+	int nro;
+	enum and_or andOr;
+	enum tipoDato tipo;
+}t_info;
+
+enum tipoCondicion{
+	condicionIf,
+	condicionWhile
+};
 
 /* structs */
 
@@ -45,16 +74,33 @@ typedef struct s_nodoPolaca{
 
 typedef t_nodoPolaca *t_polaca;
 
+typedef struct s_nodoPila{
+    	t_info info;
+    	struct s_nodoPila* psig;
+	}t_nodoPila;
+
+typedef t_nodoPila *t_pila;
+t_pila pilaIf;
+t_pila pilaWhile;
+
 /* funciones */
-
-
 void guardarPolaca(t_polaca*);
 int ponerEnPolacaNro(t_polaca*,int, char *);
 int ponerEnPolaca(t_polaca*, char *);
 void crearPolaca(t_polaca*);
 char* obtenerSalto(enum tipoSalto);
 
+void vaciarPila(t_pila*);
+t_info* sacarDePila(t_pila*);
+void crearPila(t_pila*);
+int ponerEnPila(t_pila*,t_info*);
+t_info* topeDePila(t_pila*);
 
+t_info* topeDePila(t_pila*);
+t_info* sacarDePila(t_pila*);
+int contadorIf=0;
+int contadorWhile=0;
+enum tipoCondicion tipoCondicion;
 
 /* variables globales */
 
@@ -63,6 +109,7 @@ extern t_symbol_table symbol_table[MAX_REGS];
 t_polaca polaca;
 int contadorPolaca=0;
 char ultimoComparador[3];
+enum and_or ultimoOperadorLogico;
 
 int indicesParaAsignarTipo[MAX_REGS];
 int contadorListaVar=0;
@@ -116,6 +163,7 @@ FILE  *yyin;
 %token OP_EQUAL
 %token OP_LE
 %token OP_GE
+%token OP_NE
 %token CHAR_BIT
 %token CTE_INT
 %token COMA
@@ -335,70 +383,283 @@ read:
 
 operador_comparacion:
 	OP_LOW
+	{
+		strcpy(ultimoComparador,$<vals>1);
+	}
 	| OP_GREAT
+	{
+		strcpy(ultimoComparador,$<vals>1);
+	}
 	| OP_EQUAL
+	{
+		strcpy(ultimoComparador,$<vals>1);
+	}
 	| OP_LE
+	{
+		strcpy(ultimoComparador,$<vals>1);
+	}
 	| OP_GE
+	{
+		strcpy(ultimoComparador,$<vals>1);
+	}
+	| OP_NE
+	{
+		strcpy(ultimoComparador,$<vals>1);
+	}
 	;
 
 operador_logico:
 	AND
+	{
+		ultimoOperadorLogico = and;
+	}
 	| OR
+	{
+		ultimoOperadorLogico = or;
+	}
 	;
 
 operador_negacion:
 	NOT
 	;
 
+condicion: comparacion
+			{
+				switch(tipoCondicion)
+				{
+					case condicionIf:
+						ponerEnPolaca(&polaca,"CMP");
+						ponerEnPolaca(&polaca,obtenerSalto(inverso));
+						topeDePila(&pilaIf)->salto1=contadorPolaca;
+						ponerEnPolaca(&polaca,"");
+						topeDePila(&pilaIf)->andOr = condicionSimple;
+						break;
+
+					case condicionWhile:
+						ponerEnPolaca(&polaca,"CMP");
+						ponerEnPolaca(&polaca,obtenerSalto(inverso));
+						topeDePila(&pilaWhile)->salto1=contadorPolaca;
+						ponerEnPolaca(&polaca,"");
+						topeDePila(&pilaWhile)->andOr = condicionSimple;
+						break;
+				}
+			}
+	|operador_negacion comparacion
+			{
+				switch(tipoCondicion)
+				{
+					case condicionIf:
+						ponerEnPolaca(&polaca,"CMP");
+						ponerEnPolaca(&polaca,obtenerSalto(normal));
+						topeDePila(&pilaIf)->salto1=contadorPolaca;
+						ponerEnPolaca(&polaca,"");
+						topeDePila(&pilaIf)->andOr = condicionSimple;
+						break;
+
+					case condicionWhile:
+						ponerEnPolaca(&polaca,"CMP");
+						ponerEnPolaca(&polaca,obtenerSalto(normal));
+						topeDePila(&pilaWhile)->salto1=contadorPolaca;
+						ponerEnPolaca(&polaca,"");
+						topeDePila(&pilaWhile)->andOr = condicionSimple;
+						break;
+				}
+			}
+	| comparacion operador_logico
+			{
+				switch(tipoCondicion)
+				{
+					case condicionIf:
+						switch(ultimoOperadorLogico){
+							case and:
+								ponerEnPolaca(&polaca,"CMP");
+								ponerEnPolaca(&polaca,obtenerSalto(inverso));
+								topeDePila(&pilaIf)->salto1=contadorPolaca;
+								ponerEnPolaca(&polaca,"");
+								printf("%d", topeDePila(&pilaIf)->salto1);
+								topeDePila(&pilaIf)->andOr = and;
+								break;
+							case or:
+								ponerEnPolaca(&polaca,"CMP");
+								ponerEnPolaca(&polaca,obtenerSalto(normal));
+								topeDePila(&pilaIf)->salto1=contadorPolaca;
+								ponerEnPolaca(&polaca,"");
+								topeDePila(&pilaIf)->andOr = or;
+								break;
+						}
+						break;
+
+					case condicionWhile:
+						switch(ultimoOperadorLogico){
+							case and:
+								ponerEnPolaca(&polaca,"CMP");
+								ponerEnPolaca(&polaca,obtenerSalto(inverso));
+								topeDePila(&pilaWhile)->salto1=contadorPolaca;
+								ponerEnPolaca(&polaca,"");
+								topeDePila(&pilaWhile)->andOr = and;
+								break;
+
+							case or:
+								ponerEnPolaca(&polaca,"CMP");
+								ponerEnPolaca(&polaca,obtenerSalto(normal));
+								topeDePila(&pilaWhile)->salto1=contadorPolaca;
+								ponerEnPolaca(&polaca,"");
+								topeDePila(&pilaWhile)->andOr = or;
+								break;
+						}
+						break;
+				}
+			}
+			comparacion
+				{
+					switch(tipoCondicion)
+					{
+						case condicionIf:
+							ponerEnPolaca(&polaca,"CMP");
+							ponerEnPolaca(&polaca,obtenerSalto(inverso));
+							topeDePila(&pilaIf)->salto2=contadorPolaca;
+							ponerEnPolaca(&polaca,"");
+							if(topeDePila(&pilaIf)->andOr == or){
+								char aux[20];
+								sprintf(aux, "%d", contadorPolaca);
+								ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
+							}
+							break;
+
+						case condicionWhile:
+							ponerEnPolaca(&polaca,"CMP");
+							ponerEnPolaca(&polaca,obtenerSalto(inverso));
+							topeDePila(&pilaWhile)->salto2=contadorPolaca;
+							ponerEnPolaca(&polaca,"");
+							if(topeDePila(&pilaWhile)->andOr == or){
+								char aux[20];
+								sprintf(aux, "%d", contadorPolaca);
+								ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto1, aux);
+							}
+							break;
+					}
+	            }
 comparacion:
 	expresion operador_comparacion expresion
-	| expresion operador_comparacion expresion operador_comparacion expresion
 	| between
 	;
 
 while:
-	WHILE PA operador_negacion PA comparacion PC PC bloque_ejecucion
-	| WHILE PA comparacion PC bloque_ejecucion
-	| WHILE PA comparacion operador_logico comparacion PC bloque_ejecucion
+	WHILE{
+			t_info info;
+			info.nro=contadorWhile++;
+			info.saltoElse=contadorPolaca;
+			ponerEnPila(&pilaWhile,&info);
+			tipoCondicion=condicionWhile;
+			ponerEnPolaca(&polaca,"ET");
+		} 
+		PA condicion PC bloque_ejecucion	
+		{
+			char aux[20];
+			sprintf(aux, "%d", topeDePila(&pilaWhile)->saltoElse);
+			ponerEnPolaca(&polaca,"BI");
+			ponerEnPolaca(&polaca, aux);
+			sprintf(aux, "%d", contadorPolaca);
+			switch (topeDePila(&pilaWhile)->andOr)
+			{
+			case condicionSimple:
+				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto1, aux);
+				break;
+			case and:
+				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto1, aux);
+				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto2, aux);
+			case or:
+				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto2, aux);
+				break;
+			}
+			sacarDePila(&pilaWhile);
+		}
 	;
 
 if:
-	IF PA operador_negacion PA comparacion PC PC bloque_ejecucion
-	| IF PA operador_negacion PA comparacion PC PC bloque_ejecucion else
-	| IF PA comparacion PC bloque_ejecucion
-	| IF PA comparacion PC bloque_ejecucion else
-	| IF PA comparacion operador_logico comparacion PC bloque_ejecucion
-	| IF PA comparacion operador_logico comparacion PC bloque_ejecucion else
+	IF 
+		{
+			t_info info;
+			info.nro=contadorIf++;
+			ponerEnPila(&pilaIf,&info);
+			tipoCondicion=condicionIf;
+		}
+	PA condicion PC
+	{
+
+	}
+	resto
+	{
+		sacarDePila(&pilaIf);
+	}
 	;
 
 else:
-	ELSE bloque_ejecucion
+	ELSE
+	{
+		char aux[20];
+		sprintf(aux, "%d", contadorPolaca);
+		switch (topeDePila(&pilaIf)->andOr)
+		{
+		case condicionSimple:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
+			break;
+		case and:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
+		case or:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
+			break;
+		}
+	}
+	bloque_ejecucion
+	{
+	
+		char aux[20];
+		sprintf(aux, "%d", contadorPolaca);
+		ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->saltoElse, aux);
+	}
 	;
 
 bloque_ejecucion:
 	LLA resto_programa LLC
 	;
+
+resto: 
+	bloque_ejecucion
+	{
+		char aux[20];
+		sprintf(aux, "%d", contadorPolaca);
+		
+		switch (topeDePila(&pilaIf)->andOr)
+		{
+		case condicionSimple:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
+			break;
+		case and:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
+		case or:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
+			break;
+		}
+	}
+	| bloque_ejecucion
+	{
+		char aux[20];
+		ponerEnPolaca(&polaca,"BI");
+		topeDePila(&pilaIf)->saltoElse = contadorPolaca;
+		ponerEnPolaca(&polaca, "");
+		/*if(topeDePila(&pilaIf)->andOr != or){
+			sprintf(aux, "%d", contadorPolaca);
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
+		}*/
+	}
+	else
+	;
 %%
 
-
 /* funciones */
-
-int main(int argc, char *argv[])
-{
-	crearPolaca(&polaca);
-    if ((yyin = fopen(argv[1], "rt")) == NULL) {
-        printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
-    } else { 
-    	yyparse();
-    }
-
-    // showSymbolTable(); Función para realizar el debug de la tabla de simbolos.
-    crear_TS();
-	fclose(yyin);
-	guardarPolaca(&polaca);
-  return 0;
-}
-
 int yyerror(void)
 {
     printf("Error Sintactico\n");
@@ -472,11 +733,12 @@ int ponerEnPolacaNro(t_polaca* pp,int pos, char *cadena)
 
 void guardarPolaca(t_polaca *pp)
 {
+	printf("GUARDANDO POLACA");
 	FILE*pt=fopen("intermedia.txt","w+");
 	t_nodoPolaca* pn;
 	if(!pt)
 	{
-		printf("Error al crear la tabla de simbolos\n");
+		printf("Error al crear el archivo intermedio.\n");
 		return;
 	}
 	while(*pp)
@@ -486,6 +748,7 @@ void guardarPolaca(t_polaca *pp)
         *pp=(*pp)->psig;
         free(pn);
     }
+	
 	fclose(pt);
 }
 
@@ -524,4 +787,68 @@ char* obtenerSalto(enum tipoSalto tipo)
 			break;
 	}
 }
+// Métodos pila
+/* primitivas de pila */
+
+void crearPila(t_pila* pp)
+{
+    *pp=NULL;
+}
+
+int ponerEnPila(t_pila* pp,t_info* info)
+{
+    t_nodoPila* pn=(t_nodoPila*)malloc(sizeof(t_nodoPila));
+    if(!pn)
+        return 0;
+    pn->info=*info;
+    pn->psig=*pp;
+    *pp=pn;
+    return 1;
+}
+
+t_info * sacarDePila(t_pila* pp)
+{
+	t_info* info = (t_info *) malloc(sizeof(t_info));
+    if(!*pp){
+    	return NULL;
+    }
+    *info=(*pp)->info;
+    *pp=(*pp)->psig;
+    return info;
+
+}
+
+void vaciarPila(t_pila* pp)
+{
+    t_nodoPila* pn;
+    while(*pp)
+    {
+        pn=*pp;
+        *pp=(*pp)->psig;
+        free(pn);
+    }
+}
+
+t_info* topeDePila(t_pila* pila)
+{
+	return &((*pila)->info);
+}
+
+int main(int argc, char *argv[])
+{
+	crearPila(&pilaIf);
+	crearPolaca(&polaca);
+    if ((yyin = fopen(argv[1], "rt")) == NULL) {
+        printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
+    } else { 
+    	yyparse();
+    }
+	
+    // showSymbolTable(); Función para realizar el debug de la tabla de simbolos.
+    crear_TS();
+	fclose(yyin);
+	guardarPolaca(&polaca);
+  return 0;
+}
+
 
