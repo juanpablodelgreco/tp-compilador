@@ -311,35 +311,43 @@ termino:
    ;
    
 factor: 
-	ID{
-		int posicion=buscarEnTablaDeSimbolos($<vals>1);
-		if(strcmp(symbol_table[posicion].datatype,"VARIABLE")==0)
-		{
-			yyerrormsg("Variable sin declarar");
-		}
-		if(esAsignacion==1&&strcmp(symbol_table[posicion].datatype,"STRING")==0&&strcmp(tipoAsignacion,"STRING")!=0)
-		{
-			yyerrormsg("Intenta asignar ID de distinto tipo(string)");
-		}
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-		printf("ID es Factor \n");}
-	| CTE_INT{
-		if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
-		{
-			yyerrormsg("Intenta asignar CTE de distinto tipo");
-		}
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-		printf("CTE es Factor\n");}
-	| CTE_FLOAT{
-		if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
-		{
-			yyerrormsg("Intenta asignar CTE de distinto tipo");
-		}
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-		printf("CTE es Factor\n");}
-	| PA expresion PC {printf("Expresion entre parentesis es Factor\n");}
-	| funcion {printf("funcion es Factor\n");}
-	;
+    ID{
+        int posicion=buscarEnTablaDeSimbolos($<vals>1);
+        if(strcmp(symbol_table[posicion].datatype,"VARIABLE")==0)
+        {
+            yyerrormsg("Variable sin declarar");
+        }
+        if(esAsignacion==1&&strcmp(symbol_table[posicion].datatype,"STRING")==0&&strcmp(tipoAsignacion,"STRING")!=0)
+        {
+            yyerrormsg("Intenta asignar ID de distinto tipo(string)");
+        }
+        if(esAsignacion==1&&strcmp(tipoAsignacion,"INTEGER")==0&&strcmp(symbol_table[posicion].datatype,"FLOAT")==0)
+        {
+            yyerrormsg("Intenta asignar variable float a un int");
+        }
+        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+        printf("    ID es Factor \n");}
+    | CTE_INT{
+        if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
+        {
+            yyerrormsg("Intenta asignar CTE de distinto tipo");
+        }
+        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+        printf("    CTE es Factor\n");}
+    | CTE_FLOAT{
+        if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
+        {
+            yyerrormsg("Intenta asignar CTE de distinto tipo");
+        }
+        if(esAsignacion==1&&strcmp(tipoAsignacion,"INTEGER")==0)
+        {
+            yyerrormsg("Intenta asignar CTE float a un int");
+        }
+        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+        printf("    CTE es Factor\n");}
+    | PA expresion PC {printf("    Expresion entre parentesis es Factor\n");}
+    | funcion {printf("    funcion es Factor\n");}
+    ;
 	
 funcion:
 	average {
