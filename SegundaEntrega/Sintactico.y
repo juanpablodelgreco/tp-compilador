@@ -116,6 +116,10 @@ int contadorListaVar=0;
 int esAsignacion;
 char tipoAsignacion[50];
 
+int avgNumero=0;
+int avg[MAX_REGS];
+int contadorAvg[MAX_REGS];
+
 extern char*yytext;
 extern int yylineno;
 int yystopparser=0;
@@ -265,45 +269,45 @@ asignacion:
 			esAsignacion=0;
 			strcpy(tipoAsignacion,"VARIABLE");
 			ponerEnPolaca(&polaca,"=");
-			} OP_ENDLINE {printf("    ID = Expresion es ASIGNACION\n");}
+			} OP_ENDLINE {printf("ID = Expresion es ASIGNACION\n");}
 	;
 
 expresion:
-	termino {printf("    Termino es Expresion\n");}
+	termino {printf("Termino es Expresion\n");}
 	| expresion OP_SUM{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 			{
 				yyerrormsg("Operacion invalida en suma(Intenta asignar un numero a un string)");
 			}
-		}termino{ponerEnPolaca(&polaca,"+");} {printf("    Expresion+Termino es Expresion\n");}
+		}termino{ponerEnPolaca(&polaca,"+");} {printf("Expresion+Termino es Expresion\n");}
 	| expresion OP_RES{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 			{
 				yyerrormsg("Operacion invalida en resta(Intenta asignar un numero a un string)");
 			}
-		} termino{ponerEnPolaca(&polaca,"-");} {printf("    Expresion-Termino es Expresion\n");}
+		} termino{ponerEnPolaca(&polaca,"-");} {printf("Expresion-Termino es Expresion\n");}
 	| CTE_STR{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")!=0)
 			{
 				yyerrormsg("Operacion invalida, Intenta asignar un string a un numero");
 			}
-		} {printf("    CTE_STR es Expresion\n");}
+		} {printf("CTE_STR es Expresion\n");}
 	;
 
 termino: 
-   factor {printf("    Factor es Termino\n");}
+   factor {printf("Factor es Termino\n");}
    | termino OP_MUL{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 			{
 				yyerrormsg("Operacion invalida en multiplicacion(multiplica un numero a un string)");
 			}
-		} factor{ponerEnPolaca(&polaca,"*");} {printf("     Termino*Factor es Termino\n");}
+		} factor{ponerEnPolaca(&polaca,"*");} {printf(" Termino*Factor es Termino\n");}
    | termino OP_DIV{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 			{
 				yyerrormsg("Operacion invalida en division(Divide un numero a un string)");
 			}
-		} factor{ponerEnPolaca(&polaca,"/");} {printf("     Termino/Factor es Termino\n");}
+		} factor{ponerEnPolaca(&polaca,"/");} {printf(" Termino/Factor es Termino\n");}
    ;
    
 factor: 
@@ -318,23 +322,23 @@ factor:
 			yyerrormsg("Intenta asignar ID de distinto tipo(string)");
 		}
 		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-		printf("    ID es Factor \n");}
+		printf("ID es Factor \n");}
 	| CTE_INT{
 		if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 		{
 			yyerrormsg("Intenta asignar CTE de distinto tipo");
 		}
 		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-		printf("    CTE es Factor\n");}
+		printf("CTE es Factor\n");}
 	| CTE_FLOAT{
 		if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 		{
 			yyerrormsg("Intenta asignar CTE de distinto tipo");
 		}
 		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-		printf("    CTE es Factor\n");}
-	| PA expresion PC {printf("    Expresion entre parentesis es Factor\n");}
-	| funcion {printf("    funcion es Factor\n");}
+		printf("CTE es Factor\n");}
+	| PA expresion PC {printf("Expresion entre parentesis es Factor\n");}
+	| funcion {printf("funcion es Factor\n");}
 	;
 	
 funcion:
@@ -343,17 +347,17 @@ funcion:
 		{
 			yyerrormsg("Intenta asignar valor de distinto tipo");
 		}
-		printf("     average es funcion\n");}
+		printf(" average es funcion\n");}
 	| between {
 		if(esAsignacion==1)
 		{
 			yyerrormsg("Intenta asignar valor booleano");
 		}
-		printf("     between es funcion\n");}
+		printf(" between es funcion\n");}
 	;
 
 lista:
-	CA elementos CC {printf("     [elementos] es una lista \n");}
+	CA elementos CC {printf(" [elementos] es una lista \n");}
 
 elementos:
 	elemento 
@@ -362,14 +366,35 @@ elementos:
 	
 elemento:
 	expresion
+	{
+		contadorAvg [avgNumero-1]++;
+		if(contadorAvg[avgNumero-1] > 1){
+			ponerEnPolaca(&polaca, "+");
+		}
+	}
 	;
 	
 average:
-	AVG PA lista PC {printf("     AVG(lista) es Average\n");}
+	AVG 
+	{
+		contadorAvg[avgNumero] = 0;
+		avgNumero++;
+		
+	}
+	PA lista 
+	PC {
+
+		avgNumero--;
+		char aux[20];
+		sprintf(aux, "%d", contadorAvg[avgNumero]);
+		ponerEnPolaca(&polaca, aux);
+		ponerEnPolaca(&polaca, "/");
+		printf(" AVG(lista) es Average\n");
+	}
 	;
 
 between:
-	BETWEEN PA expresion COMA CA expresion COMA expresion CC PC {printf("     BETWEEN(id,lista) es between\n");}
+	BETWEEN PA expresion COMA CA expresion COMA expresion CC PC {printf(" BETWEEN(id,lista) es between\n");}
 	;
 
 write:
@@ -650,10 +675,10 @@ resto:
 		ponerEnPolaca(&polaca,"BI");
 		topeDePila(&pilaIf)->saltoElse = contadorPolaca;
 		ponerEnPolaca(&polaca, "");
-		/*if(topeDePila(&pilaIf)->andOr != or){
+		if(topeDePila(&pilaIf)->andOr != or){
 			sprintf(aux, "%d", contadorPolaca);
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
-		}*/
+		}
 	}
 	else
 	;
@@ -733,7 +758,6 @@ int ponerEnPolacaNro(t_polaca* pp,int pos, char *cadena)
 
 void guardarPolaca(t_polaca *pp)
 {
-	printf("GUARDANDO POLACA");
 	FILE*pt=fopen("intermedia.txt","w+");
 	t_nodoPolaca* pn;
 	if(!pt)
