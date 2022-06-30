@@ -1,0 +1,6 @@
+
+    Name	   Value	Datatype	  Length
+
+       d	        	 INTEGER	       1
+
+     -19	     -19	 INTEGER	       3
