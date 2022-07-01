@@ -40,10 +40,11 @@ int crear_TS();
 SPACE       [" "]
 NUMBER		[0-9]
 LETTER	    [a-zA-Z]
+CHARACTER 	[=|>|<|!|:|+|-|*|/|?|¿|!|¡|@|%|#|&|°|´|^|`|~|/|\\|-|_|.|,|;|¬||]
 ID			{LETTER}({LETTER}|{NUMBER})*
 CTE_INT	    -?{NUMBER}*
 CTE_FLOAT   -?[1-9]?.({NUMBER}*{5}).[.].({NUMBER}*{6})
-CTE_STR     {QUOTE}.[^"]+.{QUOTE}
+CTE_STR     "\""({LETTER}|{NUMBER}|{CHARACTER}|.)*"\""
 COMMENT_OP  "-/"
 COMMENT_IN  [^"]
 COMMENT_CL  "/-"

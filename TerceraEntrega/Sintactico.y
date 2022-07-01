@@ -257,7 +257,7 @@ sentencia:
 	;
 
 asignacion: 
-	ID{
+	ID OP_AS expresion{
 		if(strcmp(symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype,"VARIABLE")==0)
 		{
 			yyerrormsg("Variable sin declarar");
@@ -265,7 +265,6 @@ asignacion:
 		esAsignacion=1;
 		strcpy(tipoAsignacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);
 		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-		}OP_AS expresion{
 			esAsignacion=0;
 			strcpy(tipoAsignacion,"VARIABLE");
 			ponerEnPolaca(&polaca,"=");
@@ -286,7 +285,7 @@ expresion:
 				yyerrormsg("Operacion invalida en resta(Intenta asignar un numero a un string)");
 			}
 		} termino{ponerEnPolaca(&polaca,"-");} {printf("Expresion-Termino es Expresion\n");}
-	| CTE_STR{
+	| expresion CTE_STR{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")!=0)
 			{
 				yyerrormsg("Operacion invalida, Intenta asignar un string a un numero");
@@ -332,8 +331,15 @@ factor:
         {
             yyerrormsg("Intenta asignar CTE de distinto tipo");
         }
-        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+       	ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
         printf("    CTE es Factor\n");}
+	| CTE_STR{
+		if(esAsignacion==1&&strcmp(tipoAsignacion,"INTEGER")==0)
+		{
+			yyerrormsg("Intenta asignar STRING de distinto tipo");
+		}
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+	}
     | CTE_FLOAT{
         if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
         {
