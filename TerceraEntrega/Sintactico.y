@@ -115,8 +115,9 @@ int indicesParaAsignarTipo[MAX_REGS];
 int contadorListaVar=0;
 int esAsignacion;
 char tipoAsignacion[50];
-
+char tipoDeDatoComparacion[7]="none";
 int avgNumero=0;
+int esAvg=0;
 int avg[MAX_REGS];
 int contadorAvg[MAX_REGS];
 
@@ -257,7 +258,7 @@ sentencia:
 	;
 
 asignacion: 
-	ID OP_AS expresion{
+	ID{
 		if(strcmp(symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype,"VARIABLE")==0)
 		{
 			yyerrormsg("Variable sin declarar");
@@ -265,6 +266,7 @@ asignacion:
 		esAsignacion=1;
 		strcpy(tipoAsignacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);
 		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+		}OP_AS expresion{
 			esAsignacion=0;
 			strcpy(tipoAsignacion,"VARIABLE");
 			ponerEnPolaca(&polaca,"=");
@@ -272,7 +274,16 @@ asignacion:
 	;
 
 expresion:
-	termino {printf("Termino es Expresion\n");}
+	termino  {
+		if(
+		strcmp(tipoDeDatoComparacion, "none") != 0
+		&& esAvg == 0
+		&& strcmp(tipoDeDatoComparacion, symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype) != 0){
+				yyerrormsg("Error al comparar variables de distinto tipo.");
+		}
+		strcmp(tipoDeDatoComparacion, "none");
+		printf("Termino es Expresion\n");
+	}
 	| expresion OP_SUM{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 			{
@@ -285,7 +296,7 @@ expresion:
 				yyerrormsg("Operacion invalida en resta(Intenta asignar un numero a un string)");
 			}
 		} termino{ponerEnPolaca(&polaca,"-");} {printf("Expresion-Termino es Expresion\n");}
-	| expresion CTE_STR{
+	| CTE_STR{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")!=0)
 			{
 				yyerrormsg("Operacion invalida, Intenta asignar un string a un numero");
@@ -331,15 +342,8 @@ factor:
         {
             yyerrormsg("Intenta asignar CTE de distinto tipo");
         }
-       	ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
         printf("    CTE es Factor\n");}
-	| CTE_STR{
-		if(esAsignacion==1&&strcmp(tipoAsignacion,"INTEGER")==0)
-		{
-			yyerrormsg("Intenta asignar STRING de distinto tipo");
-		}
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
-	}
     | CTE_FLOAT{
         if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
         {
@@ -361,6 +365,7 @@ funcion:
 		{
 			yyerrormsg("Intenta asignar valor de distinto tipo");
 		}
+		esAvg=1;
 		printf(" average es funcion\n");}
 	| between {
 		if(esAsignacion==1)
@@ -404,6 +409,7 @@ average:
 		ponerEnPolaca(&polaca, aux);
 		ponerEnPolaca(&polaca, "/");
 		printf(" AVG(lista) es Average\n");
+		esAvg=0;
 	}
 	;
 
@@ -579,7 +585,7 @@ condicion: comparacion
 					}
 	            }
 comparacion:
-	expresion operador_comparacion expresion
+	expresion {strcpy(tipoDeDatoComparacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);}operador_comparacion expresion
 	| between
 	;
 
