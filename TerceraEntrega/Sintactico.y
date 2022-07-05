@@ -38,6 +38,7 @@ enum tipoDato{
 
 typedef struct
 {
+	char *cadena;
 	int cantExpresiones;
 	int salto1;
 	int salto2;
@@ -82,7 +83,7 @@ typedef struct s_nodoPila{
 typedef t_nodoPila *t_pila;
 t_pila pilaIf;
 t_pila pilaWhile;
-t_pila pilaBetween;
+t_pila pilaASM;
 
 /* funciones */
 void guardarPolaca(t_polaca*);
@@ -90,6 +91,7 @@ int ponerEnPolacaNro(t_polaca*,int, char *);
 int ponerEnPolaca(t_polaca*, char *);
 void crearPolaca(t_polaca*);
 char* obtenerSalto(enum tipoSalto);
+void generar_assembler(t_polaca*);
 
 void vaciarPila(t_pila*);
 t_info* sacarDePila(t_pila*);
@@ -103,14 +105,15 @@ int contadorIf=0;
 int contadorWhile=0;
 enum tipoCondicion tipoCondicion;
 
+FILE * pf;
+
 /* variables globales */
-
 extern t_symbol_table symbol_table[MAX_REGS];
-
 t_polaca polaca;
 int contadorPolaca=0;
 char ultimoComparador[3];
 enum and_or ultimoOperadorLogico;
+extern table_regs;
 
 int indicesParaAsignarTipo[MAX_REGS];
 int contadorListaVar=0;
@@ -123,7 +126,6 @@ int avg[MAX_REGS];
 int contadorAvg[MAX_REGS];
 char auxBetween [100];
 int isIf = 0;
-
 extern char*yytext;
 extern int yylineno;
 int yystopparser=0;
@@ -279,13 +281,18 @@ asignacion:
 
 expresion:
 	termino  {
+		char aux1[50];
+		sprintf(aux1, "%s", symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+		printf("*************");
+		printf(aux1);
+		printf("*************");
 		if(
 		strcmp(tipoDeDatoComparacion, "none") != 0
 		&& esAvg == 0
 		&& strcmp(tipoDeDatoComparacion, symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype) != 0){
 				yyerrormsg("Error al comparar variables de distinto tipo.");
 		}
-		strcmp(tipoDeDatoComparacion, "none");
+		strcpy(tipoDeDatoComparacion, "none");
 		printf("Termino es Expresion\n");
 	}
 	| expresion OP_SUM{
@@ -300,12 +307,7 @@ expresion:
 				yyerrormsg("Operacion invalida en resta(Intenta asignar un numero a un string)");
 			}
 		} termino{ponerEnPolaca(&polaca,"-");} {printf("Expresion-Termino es Expresion\n");}
-	| CTE_STR{
-			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")!=0)
-			{
-				yyerrormsg("Operacion invalida, Intenta asignar un string a un numero");
-			}
-		} {ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);printf("CTE_STR es Expresion\n");}
+	
 	;
 
 termino: 
@@ -359,6 +361,12 @@ factor:
         }
         ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
         printf("    CTE es Factor\n");}
+		| CTE_STR{
+			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")!=0)
+			{
+				yyerrormsg("Operacion invalida, Intenta asignar un string a un numero");
+			}
+		} {ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);printf("CTE_STR es Expresion\n");}
     | PA expresion PC {printf("    Expresion entre parentesis es Factor\n");}
     | funcion {printf("    funcion es Factor\n");}
     ;
@@ -623,7 +631,7 @@ condicion:
 	            }
 
 comparacion:
-	expresion {strcpy(tipoDeDatoComparacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);}operador_comparacion expresion
+	expresion {strcpy(tipoDeDatoComparacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);printf("--------");printf(tipoDeDatoComparacion);printf("--------");}operador_comparacion expresion
 	;
 
 while:
@@ -915,6 +923,8 @@ int main(int argc, char *argv[])
 {
 	crearPila(&pilaIf);
 	crearPolaca(&polaca);
+	crearPila(&pilaASM);
+
     if ((yyin = fopen(argv[1], "rt")) == NULL) {
         printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
     } else { 
@@ -925,7 +935,57 @@ int main(int argc, char *argv[])
     crear_TS();
 	fclose(yyin);
 	guardarPolaca(&polaca);
-  return 0;
+	printf("\nPOLACA GENERADA\n");	
+	generar_assembler(&polaca);
+	printf("\nASSEMBLER GENERADO\n");
+  	return 0;
+}
+
+
+/* assembler */
+
+void generar_assembler(t_polaca *pp)
+{
+	pf = fopen("final.asm", "w");
+	fprintf(pf, "\nINCLUDE macros2.asm\t\t ;incluye macros\n");
+    fprintf(pf, "INCLUDE number.asm\t\t ;incluye el asm para impresion de numeros\n");
+    fprintf(pf, "\n.MODEL LARGE\t\t ; tipo del modelo de memoria usado.\n");
+    fprintf(pf, ".386\n");
+	fprintf(pf, ".387\n");
+    fprintf(pf, ".STACK 200h\t\t ; bytes en el stack\n");
+
+	fprintf(pf, "\t\n.DATA\t\t ; comienzo de la zona de datos.\n");
+    fprintf(pf, "\tTRUE equ 1\n");
+    fprintf(pf, "\tFALSE equ 0\n");
+    fprintf(pf, "\tMAXTEXTSIZE equ %d\n",CADENA_MAXIMA);
+
+	int i;
+	for(i=0; i < table_regs; i++)
+    {
+		if(strcmp((symbol_table[i]).datatype, "INTEGER") == 0 && (symbol_table[i]).value == 0 )
+		{
+			fprintf(pf, "\t%s dd 0\n",(symbol_table[i]).lexeme);
+		}
+		if(strcmp((symbol_table[i]).datatype, "FLOAT") == 0 )
+		{
+			fprintf(pf, "\t%s dd 0.0\n",(symbol_table[i]).lexeme);
+		}
+		if(strcmp((symbol_table[i]).datatype, "STRING") == 0 )
+		{
+			fprintf(pf, "\t%s db MAXTEXTSIZE dup(?), '$'\n",symbol_table[i].value);
+		}
+		if(strcmp((symbol_table[i]).datatype, "CTE_INTEGER") == 0 || strcmp((symbol_table[i]).datatype, "CTE_FLOAT") == 0)
+		{
+            fprintf(pf, "\t%s dd %s\n",(symbol_table[i]).lexeme, (symbol_table[i]).value);
+		}
+		if(strcmp((symbol_table[i]).datatype, "CTE_STRING") == 0)
+		{
+			int longitud = (symbol_table[i]).length;
+			int size = CADENA_MAXIMA - longitud;
+			fprintf(pf, "\t%s db %s, '$', %d dup(?)\n", (symbol_table[i]).lexeme, (symbol_table[i]).value, size);
+		}
+	}
+	fclose(pf);
 }
 
 
