@@ -82,6 +82,7 @@ typedef struct s_nodoPila{
 typedef t_nodoPila *t_pila;
 t_pila pilaIf;
 t_pila pilaWhile;
+t_pila pilaBetween;
 
 /* funciones */
 void guardarPolaca(t_polaca*);
@@ -120,6 +121,8 @@ int avgNumero=0;
 int esAvg=0;
 int avg[MAX_REGS];
 int contadorAvg[MAX_REGS];
+char auxBetween [100];
+int isIf = 0;
 
 extern char*yytext;
 extern int yylineno;
@@ -265,10 +268,11 @@ asignacion:
 		}
 		esAsignacion=1;
 		strcpy(tipoAsignacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+		
 		}OP_AS expresion{
 			esAsignacion=0;
 			strcpy(tipoAsignacion,"VARIABLE");
+			ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
 			ponerEnPolaca(&polaca,"=");
 			} OP_ENDLINE {printf("ID = Expresion es ASIGNACION\n");}
 	;
@@ -301,7 +305,7 @@ expresion:
 			{
 				yyerrormsg("Operacion invalida, Intenta asignar un string a un numero");
 			}
-		} {printf("CTE_STR es Expresion\n");}
+		} {ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);printf("CTE_STR es Expresion\n");}
 	;
 
 termino: 
@@ -367,13 +371,6 @@ funcion:
 		}
 		esAvg=1;
 		printf(" average es funcion\n");}
-	| between {
-		if(esAsignacion==1)
-		{
-			yyerrormsg("Intenta asignar valor booleano");
-		}
-		printf(" between es funcion\n");}
-	;
 
 lista:
 	CA elementos CC {printf(" [elementos] es una lista \n");}
@@ -414,7 +411,44 @@ average:
 	;
 
 between:
-	BETWEEN PA expresion COMA CA expresion COMA expresion CC PC {printf(" BETWEEN(id,lista) es between\n");}
+	BETWEEN PA ID 
+	{	
+		if(strcmp(symbol_table[buscarEnTablaDeSimbolos($<vals>3)].datatype,"INTEGER")!=0){
+			yyerrormsg("La variable de entrada debe ser de tipo INTEGER.");
+		}
+		strcpy(auxBetween,symbol_table[buscarEnTablaDeSimbolos($<vals>3)].lexeme);
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>3)].lexeme);
+
+	}
+	COMA rango PC {printf(" BETWEEN(id,lista) es between\n");}
+	;
+
+	rango:	CA expresion OP_ENDLINE {
+		
+			ponerEnPolaca(&polaca,"CMP");
+			ponerEnPolaca(&polaca,"BLT");
+			t_info info;
+			info.salto1 = contadorPolaca;
+			if(isIf){
+				ponerEnPila(&pilaIf, &info);
+			}else{
+				ponerEnPila(&pilaWhile, &info);
+			}
+			ponerEnPolaca(&polaca,"");
+			ponerEnPolaca(&polaca,auxBetween);
+	} 
+	expresion CC
+	{
+		ponerEnPolaca(&polaca,"CMP");
+		ponerEnPolaca(&polaca,"BGT");
+		if(isIf){
+			topeDePila(&pilaIf)->salto2 = contadorPolaca;
+			isIf=0;
+		}else{
+			topeDePila(&pilaWhile)->salto2 = contadorPolaca;
+		}
+		ponerEnPolaca(&polaca,"");
+	}
 	;
 
 write:
@@ -468,7 +502,10 @@ operador_negacion:
 	NOT
 	;
 
-condicion: comparacion
+condicion: 
+		between  { printf("condición con between\n");}
+		|
+		comparacion
 			{
 				switch(tipoCondicion)
 				{
@@ -584,9 +621,9 @@ condicion: comparacion
 							break;
 					}
 	            }
+
 comparacion:
 	expresion {strcpy(tipoDeDatoComparacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);}operador_comparacion expresion
-	| between
 	;
 
 while:
@@ -629,10 +666,8 @@ if:
 			ponerEnPila(&pilaIf,&info);
 			tipoCondicion=condicionIf;
 		}
-	PA condicion PC
-	{
-
-	}
+	PA { isIf=1; } condicion 
+	PC 
 	resto
 	{
 		sacarDePila(&pilaIf);
@@ -675,7 +710,6 @@ resto:
 	{
 		char aux[20];
 		sprintf(aux, "%d", contadorPolaca);
-		
 		switch (topeDePila(&pilaIf)->andOr)
 		{
 		case condicionSimple:
@@ -684,6 +718,7 @@ resto:
 		case and:
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
+			break;
 		case or:
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
 			break;
@@ -720,8 +755,6 @@ int yyerrormsg(const char * msg)
 }
 
 /* primitivas de polaca */
-
-
 void crearPolaca(t_polaca* pp)
 {
     *pp=NULL;
