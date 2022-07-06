@@ -30,7 +30,7 @@ int checkString(char* str);
 void pushSymbolTable(char* str, int is_cte, char*stype);
 void showSymbolTable();
 int crear_TS();
-
+char* reemplazarCaracter(char const * const,  char const * const,  char const * const);
 
 %}
 
@@ -263,4 +263,41 @@ int buscarEnTablaDeSimbolos(char* objetive){
 		}
 	}
 	return -1;
+}
+
+
+char * reemplazarCaracter(char const * const original,  char const * const pattern,  char const * const replacement)
+{
+	size_t const replen = strlen(replacement);
+	size_t const patlen = strlen(pattern);
+	size_t const orilen = strlen(original);
+	size_t patcnt = 0;
+	const char * oriptr;
+	const char * patloc;
+	
+	for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+	{
+		patcnt++;
+	}
+	
+	size_t const retlen = orilen + patcnt * (replen - patlen);
+    char * const returned = (char *) malloc( sizeof(char) * (retlen + 1) );
+    
+    if (returned != NULL)
+    {
+		char * retptr = returned;
+		
+		for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+		{
+			size_t const skplen = patloc - oriptr;
+			strncpy(retptr, oriptr, skplen);
+			retptr += skplen;
+			strncpy(retptr, replacement, replen);
+			retptr += replen;
+		}
+	
+		strcpy(retptr, oriptr);
+	}
+	
+	return returned;
 }
