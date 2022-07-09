@@ -957,15 +957,16 @@ void generarAssembler(t_polaca* pp)
 	char ultimoTipo[CADENA_MAXIMA]= "none";
 	char ultimaCadena[CADENA_MAXIMA];
 	int huboAsignacion=TRUE;
+	int huboSalto=FALSE;
 	pf = fopen("final.asm", "w");
 
-	fprintf(pf, "\nINCLUDE macros2.asm\t\t ;incluye macros\n");
-    fprintf(pf, "INCLUDE number.asm\t\t ;incluye el asm para impresion de numeros\n");
-    fprintf(pf, "\n.MODEL LARGE\t\t ; tipo del modelo de memoria usado.\n");
-    fprintf(pf, ".386\n");
-    fprintf(pf, ".STACK 200h\t\t ; bytes en el stack\n");
+	fprintf(pf, "\nINCLUDE macros2.asm\t\t;Biblioteca\n");
+    fprintf(pf, "INCLUDE number.asm\t\t;Biblioteca\n");
+    fprintf(pf, "\n.MODEL LARGE\t\t;Modelo de memoria\n");
+    fprintf(pf, ".386\t\t;Tipo de procesador\n");
+    fprintf(pf, ".STACK 200h\t\t;Bytes en el stack\n");
 
-	fprintf(pf, "\t\n.DATA\t\t ; comienzo de la zona de datos.\n");
+	fprintf(pf, "\t\n.DATA\t\t;Inicializa el segmento de datos\n");
     fprintf(pf, "\tTRUE equ 1\n");
     fprintf(pf, "\tFALSE equ 0\n");
     fprintf(pf, "\tMAXTEXTSIZE equ %d\n",CADENA_MAXIMA);
@@ -974,11 +975,11 @@ void generarAssembler(t_polaca* pp)
     {
 		if(strcmp((symbol_table[i]).datatype, "INTEGER") == 0 && atoi((symbol_table[i]).value) == 0 )
 		{
-			fprintf(pf, "\t_%s dd 0\n",(symbol_table[i]).lexeme);
+			fprintf(pf, "\t_%s dd ?\n",(symbol_table[i]).lexeme);
 		}
 		if(strcmp((symbol_table[i]).datatype, "FLOAT") == 0 && atoi((symbol_table[i]).value) == 0 )
 		{
-			fprintf(pf, "\t_%s dd 0.0\n",(symbol_table[i]).lexeme);
+			fprintf(pf, "\t_%s dd ?\n",(symbol_table[i]).lexeme);
 		}
 		if(strcmp((symbol_table[i]).datatype, "STRING") == 0 && strcmp(symbol_table[i].value, "") == 0)
 		{
@@ -1000,15 +1001,15 @@ void generarAssembler(t_polaca* pp)
 		}
 	}
 
-	/*// declaración de auxiliares
+	// AUXILIARES
 	for(i=0;i<auxiliaresNecesarios;i++)
 	{
 		fprintf(pf,"\t_auxR%d \tDD 0.0\n",i);
 	}
 	for(i=0;i<auxiliaresNecesarios;i++)
 	{
-		fprintf(pf,"\tauxE%d \tDW 0\n",i);
-	}*/
+		fprintf(pf,"\t_auxE%d \tDW 0\n",i);
+	}
 	
 	// CÓDIGO
 	fprintf(pf,"\n.CODE\n.startup\n\tmov AX,@DATA\n\tmov DS,AX\n");
@@ -1020,17 +1021,12 @@ void generarAssembler(t_polaca* pp)
 			int pos;
 			strcpy(linea, auxPolaca->info.cadena);
 
-			char aux1[CADENA_MAXIMA];
-			sprintf(aux1, "%s\n", linea);
-			printf("-------------");
-			printf(linea);
-			printf("-------------\n");
-/*
-			char aux1[CADENA_MAXIMA];
-			sprintf(aux1, "%s\n", linea);
-			printf("-------------");
-			printf(linea);
-			printf("-------------\n");
+			char aux1[50];
+			sprintf(aux1, "%s", linea);
+			printf("*************");
+			printf(aux1);
+			printf("*************");
+
 	    	//VARIABLES
 	    	if((pos=buscarEnTablaDeSimbolos(linea))!=ERROR 
 			&& (strcmp(symbol_table[pos].value, "") == 0 
@@ -1052,7 +1048,7 @@ void generarAssembler(t_polaca* pp)
 	    		ponerEnPila(&pilaASM,&info);
 				strcpy(ultimoTipo, info.dataType);
 		    }
-
+		
 			//CONSTANTES
 	    	if((pos=buscarEnTablaDeSimbolos(linea))!=ERROR 
 			&& (strcmp(symbol_table[pos].value, "") != 0 
@@ -1075,15 +1071,14 @@ void generarAssembler(t_polaca* pp)
 		    	strcpy(ultimoTipo, info2.dataType);
 		    }
 		
-	    // operadores aritméticos
+	    	// operadores aritméticos
 		    if(strcmp(linea, "*") == 0 )
 		    {
 				t_info *op1=sacarDePila(&pilaASM);
 				t_info *op2;
 				t_info info;
-					printf("MULT\n");
+				printf("MULT\n");
 				if(strcmp(op1->dataType, "INTEGER") == 0){
-				
 					fprintf(pf,";MULTIPLICACION DE ENTEROS\n");
 					op2=sacarDePila(&pilaASM);
 					fprintf(pf,"\tfild \t_%s\n", op1->cadena);
@@ -1234,72 +1229,70 @@ void generarAssembler(t_polaca* pp)
 			{
 				t_info *op1= sacarDePila(&pilaASM);
 				t_info *op2= sacarDePila(&pilaASM);
-				char aux1[50];
-				sprintf(aux1, "%s", op1->dataType);
-				printf("*************");
-				printf(aux1);
-				printf("*************");
+			
 				if(strcmp(op1->dataType, "FLOAT") == 0)
 				{
-					printf("PASEEEEEEECPM");
 					fprintf(pf,"\tfld \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfld \t_%s\n", op2->cadena);
 				}
 				else if(strcmp(op1->dataType, "INTEGER") == 0)
-				{
+				{	
 					fprintf(pf,"\tfild \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfild \t_%s\n", op2->cadena);
-
-				}else if(strcmp(op1->dataType, "STRING") == 0){
-
 				}
 			}
-			
+
+			if(huboSalto == TRUE){
+				fprintf(pf,"\tET_%s\n", linea);
+				huboSalto = FALSE;
+			}
+		
 			//>
 			if(strcmp(linea, "BLE") == 0)
 			{
-				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjbe\t\t%s\n",sacarDePila(&pilaASM)->cadena);
+				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjbe");
+				huboSalto=TRUE;
 			}
 
 			//<
 			if(strcmp(linea, "BGE") == 0)
 			{
-				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjae\t\t%s\n",sacarDePila(&pilaASM)->cadena);
+				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjae");
+				huboSalto=TRUE;
 			}
 
 			//!=
 			if(strcmp(linea, "BEQ") == 0)
 			{
-				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tje\t\t%s\n",sacarDePila(&pilaASM)->cadena);
+				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tje");
+				huboSalto=TRUE;
 			}
 
 			//==
 			if(strcmp(linea, "BNE") == 0)
 			{
-				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjne\t\t%s\n",sacarDePila(&pilaASM)->cadena);
+				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjne");
+				huboSalto=TRUE;
 			}
 
 			//>=
 			if(strcmp(linea, "BLT") == 0)
 			{
-				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjb\t\t%s\n",sacarDePila(&pilaASM)->cadena);
+				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjb");
+				huboSalto=TRUE;
 			}
 
 			//<=
 			if(strcmp(linea, "BGT") == 0)
 			{
-				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tja\t\t%s\n",sacarDePila(&pilaASM)->cadena);
-			}
+				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tja");
+				huboSalto=TRUE;
+			}	
 
 			if(strcmp(linea, "BI") == 0)
 			{
-				fprintf(pf,"\tjmp\t\t%s\n",sacarDePila(&pilaASM)->cadena);
-			}
-
-			// etiquetas
-			if(strcmp(linea, "#") == 0)
-			{
-				fprintf(pf,"%s:\n",reemplazarCaracter(linea,"#",""));
+				fprintf(pf,"\tjmp");
+				huboSalto=TRUE;
 			}
 
 			// saltos
@@ -1314,20 +1307,19 @@ void generarAssembler(t_polaca* pp)
 			// asignación
 			if(strcmp(linea, "=") == 0)
 			{
-				if(strcmp(ultimoTipo, "INTEGER") == 0){
+				if(strcmp(ultimoTipo, "STRING") == 0){
 					fprintf(pf,";ASIGNACION CADENA\n");
 					fprintf(pf,"\tmov ax, @DATA\n\tmov ds, ax\n\tmov es, ax\n");
 					fprintf(pf,"\tmov si, OFFSET\t_%s\n", sacarDePila(&pilaASM)->cadena);
 					fprintf(pf,"\tmov di, OFFSET\t_%s\n", sacarDePila(&pilaASM)->cadena);
-					fprintf(pf,"\tcall copiar\n");
-				}else if(strcmp(ultimoTipo, "STRING") == 0){
+				}else if(strcmp(ultimoTipo, "INTEGER") == 0){
 					fprintf(pf,";ASIGNACION ENTERO\n");
 					t_info *op1=sacarDePila(&pilaASM);
 					fprintf(pf,"\tfild \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfistp \t_%s\n",sacarDePila(&pilaASM)->cadena);
 					huboAsignacion=TRUE;
 				}else if(strcmp(ultimoTipo, "FLOAT") == 0){
-					fprintf(pf,";ASIGNACION REAL\n");
+					fprintf(pf,";ASIGNACION FLOAT\n");
 					t_info *op=sacarDePila(&pilaASM);
 					fprintf(pf,"\tfld \t_%s\n", op->cadena);
 					fprintf(pf,"\tfstp \t_%s\n",sacarDePila(&pilaASM)->cadena);
@@ -1347,28 +1339,11 @@ void generarAssembler(t_polaca* pp)
 					fprintf(pf,"\tdisplayString \t_%s\n\tnewLine 1\n",sacarDePila(&pilaASM)->cadena);
 				}
 			}
-
-			// read
-			if(strcmp(linea,"READ")==0)
-			{
-				fprintf(pf,";ENTRADA POR CONSOLA\n");
-				if(strcmp(ultimoTipo, "INTEGER") == 0){
-					fprintf(pf,"\tgetFloat \t_%s\n",sacarDePila(&pilaASM)->cadena);
-				}else if(strcmp(ultimoTipo, "FLOAT") == 0){
-					fprintf(pf,"\tgetFloat \t_%s\n",sacarDePila(&pilaASM)->cadena);
-				}else if(strcmp(ultimoTipo, "STRING") == 0){
-					fprintf(pf,"\tgetString \t_%s\n",sacarDePila(&pilaASM)->cadena);	
-				}
-		    }*/
 		
         	*pp=(*pp)->psig;
 		}
 
-
-			fprintf(pf,"mov ah, 4ch\n\tint 21h\n");
-
-			// fin del archivo
-			fprintf(pf,"\nend");
-			fclose(pf);
+		fprintf(pf,"mov ax, 4C00h\n\tint 21h\nend");
+		fclose(pf);
     }
 
