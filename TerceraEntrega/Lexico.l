@@ -24,10 +24,11 @@ char *yyltext;
 char memory[50];
 
 int yyparse();
-int checkInteger(char* str);
-int checkFloat(char* str);
-int checkString(char* str);
-void pushSymbolTable(char* str, int is_cte, char*stype);
+int checkInteger(char*);
+int checkFloat(char*);
+int checkString(char*);
+void pushSymbolTable(char*, int, char*);
+char* normalizar(char*);
 void showSymbolTable();
 int crear_TS();
 char* reemplazarCaracter(char const * const,  char const * const,  char const * const);
@@ -192,7 +193,7 @@ void pushSymbolTable(char* str, int is_cte, char* stype){
     int i=0, duplicate=0;
     while(i<table_regs && i<MAX_REGS && !duplicate)
     {
-        if(!strcmp(symbol_table[i].lexeme,auxCad)){
+        if(!strcmp(symbol_table[i].lexeme,str)){
             duplicate = 1;
         }
         i++;
@@ -200,13 +201,7 @@ void pushSymbolTable(char* str, int is_cte, char* stype){
     if(!duplicate)
     {
         symbol_table[table_regs].length = strlen(str);
-        char* auxCad;
-        strcpy(auxCad,reemplazarCaracter(str,".","p"));
-        strcpy(auxCad,reemplazarCaracter(auxCad," ","_"));
-        strcpy(auxCad,reemplazarCaracter(auxCad,"\"",""));
-        printf("**********AUXCAD******\n");
-        printf(auxCad);
-        strcpy(symbol_table[table_regs].lexeme, auxCad);
+        strcpy(symbol_table[table_regs].lexeme, normalizar(str));
         if(is_cte){
             strcpy(symbol_table[table_regs].value,str);
         }
@@ -247,7 +242,7 @@ int crear_TS(){
 int buscarEnTablaDeSimbolos(char* objetive){
 
 	int i;
-
+    strcpy(objetive, normalizar(objetive));
 	for(i=0; i<table_regs; i++){
 		if(strcmp(symbol_table[i].lexeme,objetive)==0)
 		{
@@ -293,3 +288,11 @@ char * reemplazarCaracter(char const * const original,  char const * const patte
 	return returned;
 }
   
+char* normalizar(char* cad){
+        char *auxCad = (char *) malloc( sizeof(char) * (strlen(cad)) + 2);
+        strcpy(auxCad,reemplazarCaracter(cad,".","p"));
+        strcpy(auxCad,reemplazarCaracter(auxCad,"\"",""));
+        strcpy(auxCad,reemplazarCaracter(auxCad," ","_"));
+
+        return auxCad;
+}
