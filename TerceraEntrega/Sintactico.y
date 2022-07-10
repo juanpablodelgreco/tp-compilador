@@ -397,6 +397,7 @@ elemento:
 		contadorAvg [avgNumero-1]++;
 		if(contadorAvg[avgNumero-1] > 1){
 			ponerEnPolaca(&polaca, "+");
+			auxiliaresNecesarios++;
 		}
 	}
 	;
@@ -416,6 +417,7 @@ average:
 		sprintf(aux, "%d", contadorAvg[avgNumero]);
 		ponerEnPolaca(&polaca, aux);
 		ponerEnPolaca(&polaca, "/");
+		auxiliaresNecesarios++;
 		printf(" AVG(lista) es Average\n");
 		esAvg=0;
 	}
@@ -463,12 +465,22 @@ between:
 	;
 
 write:
-    WRITE CTE_STR OP_ENDLINE
-	| WRITE ID OP_ENDLINE
+    WRITE CTE_STR {
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme);
+		ponerEnPolaca(&polaca,"WRITE");
+	} OP_ENDLINE
+	| WRITE ID {
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme);
+		ponerEnPolaca(&polaca,"WRITE");
+	}
+	OP_ENDLINE
     ;
 
 read: 
-	READ ID OP_ENDLINE
+	READ ID {
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme);
+		ponerEnPolaca(&polaca,"READ");
+	} OP_ENDLINE
 	;
 
 operador_comparacion:
@@ -991,7 +1003,7 @@ void generarAssembler(t_polaca* pp)
 		&& atoi((symbol_table[i]).value) != 0
 		) 
 		{
-            fprintf(pf, "\t_%s dd %s\n",(symbol_table[i]).lexeme, (symbol_table[i]).value);
+			fprintf(pf, "\t_%s dd %s\n",(symbol_table[i]).lexeme, (symbol_table[i]).value);
 		}
 		if(strcmp((symbol_table[i]).datatype, "STRING") == 0 && strcmp(symbol_table[i].value, "") != 0)
 		{
@@ -1020,12 +1032,6 @@ void generarAssembler(t_polaca* pp)
 			char linea[CADENA_MAXIMA];
 			int pos;
 			strcpy(linea, auxPolaca->info.cadena);
-
-			char aux1[50];
-			sprintf(aux1, "%s", linea);
-			printf("*************");
-			printf(aux1);
-			printf("*************");
 
 	    	//VARIABLES
 	    	if((pos=buscarEnTablaDeSimbolos(linea))!=ERROR 
@@ -1077,7 +1083,6 @@ void generarAssembler(t_polaca* pp)
 				t_info *op1=sacarDePila(&pilaASM);
 				t_info *op2;
 				t_info info;
-				printf("MULT\n");
 				if(strcmp(op1->dataType, "INTEGER") == 0){
 					fprintf(pf,";MULTIPLICACION DE ENTEROS\n");
 					op2=sacarDePila(&pilaASM);
@@ -1098,7 +1103,7 @@ void generarAssembler(t_polaca* pp)
 						fprintf(pf,"\tfld \t_%s\n", op1->cadena);
 						fprintf(pf,"\tfld \t_%s\n", op2->cadena);
 						fprintf(pf,"\tfmul\n");
-						strcpy(aux1,"_auxR");
+						strcpy(aux1,"auxR");
 						itoa(nroAuxReal,aux2,10);
 			   			strcat(aux1,aux2);
 						fprintf(pf,"\tfstp \t_%s\n", aux1);
@@ -1136,7 +1141,7 @@ void generarAssembler(t_polaca* pp)
 					fprintf(pf,"\tfld \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfld \t_%s\n", op2->cadena);
 					fprintf(pf,"\tfadd\n");
-					strcpy(aux1,"_auxR");
+					strcpy(aux1,"auxR");
 					itoa(nroAuxReal,aux2,10);
 					strcat(aux1,aux2);
 					fprintf(pf,"\tfstp \t_%s\n", aux1);
@@ -1173,7 +1178,7 @@ void generarAssembler(t_polaca* pp)
 					fprintf(pf,"\tfld \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfld \t_%s\n", op2->cadena);
 					fprintf(pf,"\tfdivr\n");
-					strcpy(aux1,"_auxR");
+					strcpy(aux1,"auxR");
 					itoa(nroAuxReal,aux2,10);
 					strcat(aux1,aux2);
 					fprintf(pf,"\tfstp \t_%s\n", aux1);
@@ -1212,7 +1217,7 @@ void generarAssembler(t_polaca* pp)
 					fprintf(pf,"\tfld \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfld \t_%s\n", op2->cadena);
 					fprintf(pf,"\tfsubr\n");
-					strcpy(aux1,"_auxR");
+					strcpy(aux1,"auxR");
 					itoa(nroAuxReal,aux2,10);
 					strcat(aux1,aux2);
 					fprintf(pf,"\tfstp \t_%s\n", aux1);
@@ -1235,13 +1240,16 @@ void generarAssembler(t_polaca* pp)
 					fprintf(pf,"\tfld \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfld \t_%s\n", op2->cadena);
 				}
-				else if(strcmp(op1->dataType, "INTEGER") == 0)
+				else
 				{	
 					fprintf(pf,"\tfild \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfild \t_%s\n", op2->cadena);
-				}
+				}/*else if(strcmp(op1->dataType, "STRING") == 0){
+					fprintf(pf,"\t_%s\n", op1->cadena);
+					fprintf(pf,"\t_%s\n", op2->cadena);
+				}*/
 			}
-
+		
 			if(huboSalto == TRUE){
 				fprintf(pf,"\tET_%s\n", linea);
 				huboSalto = FALSE;
@@ -1249,7 +1257,7 @@ void generarAssembler(t_polaca* pp)
 		
 			//>
 			if(strcmp(linea, "BLE") == 0)
-			{
+			{	
 				fprintf(pf,"\tfcomp\n\tfstsw\tax\n\tfwait\n\tsahf\n\tjbe");
 				huboSalto=TRUE;
 			}
@@ -1306,44 +1314,61 @@ void generarAssembler(t_polaca* pp)
 
 			// asignación
 			if(strcmp(linea, "=") == 0)
-			{
+			{	
 				if(strcmp(ultimoTipo, "STRING") == 0){
 					fprintf(pf,";ASIGNACION CADENA\n");
 					fprintf(pf,"\tmov ax, @DATA\n\tmov ds, ax\n\tmov es, ax\n");
 					fprintf(pf,"\tmov si, OFFSET\t_%s\n", sacarDePila(&pilaASM)->cadena);
 					fprintf(pf,"\tmov di, OFFSET\t_%s\n", sacarDePila(&pilaASM)->cadena);
 				}else if(strcmp(ultimoTipo, "INTEGER") == 0){
-					fprintf(pf,";ASIGNACION ENTERO\n");
 					t_info *op1=sacarDePila(&pilaASM);
+					t_info *op2=sacarDePila(&pilaASM);
 					fprintf(pf,"\tfild \t_%s\n", op1->cadena);
-					fprintf(pf,"\tfistp \t_%s\n",sacarDePila(&pilaASM)->cadena);
+					if(op2){
+						fprintf(pf,"\tfstp \t_%s\n",op2->cadena);
+					}
 					huboAsignacion=TRUE;
 				}else if(strcmp(ultimoTipo, "FLOAT") == 0){
 					fprintf(pf,";ASIGNACION FLOAT\n");
-					t_info *op=sacarDePila(&pilaASM);
-					fprintf(pf,"\tfld \t_%s\n", op->cadena);
-					fprintf(pf,"\tfstp \t_%s\n",sacarDePila(&pilaASM)->cadena);
+					t_info *op1=sacarDePila(&pilaASM);
+					t_info *op2=sacarDePila(&pilaASM);
+					fprintf(pf,"\tfld \t_%s\n", op1->cadena);
+					if(op2){
+						fprintf(pf,"\tfstp \t_%s\n",op2->cadena);
+					}
 					huboAsignacion=TRUE;
 				}
 			}
 
-			// write
+			//WRITE
 			if(strcmp(linea,"WRITE")==0)
 			{
 				fprintf(pf,";SALIDA POR CONSOLA\n");
+				printf(ultimoTipo);
 				if(strcmp(ultimoTipo, "INTEGER") == 0){
 					fprintf(pf,"\tdisplayInteger \t_%s,3\n\tnewLine 1\n",sacarDePila(&pilaASM)->cadena);	
 				}else if(strcmp(ultimoTipo, "FLOAT") == 0){
 					fprintf(pf,"\tdisplayFloat \t_%s,3\n\tnewLine 1\n",sacarDePila(&pilaASM)->cadena);	
-				}else if(strcmp(ultimoTipo, "STRING")){
+				}else if(strcmp(ultimoTipo, "STRING") == 0){
 					fprintf(pf,"\tdisplayString \t_%s\n\tnewLine 1\n",sacarDePila(&pilaASM)->cadena);
 				}
 			}
+
+			//READ
+			if(strcmp(linea,"READ")==0)
+			{
+				fprintf(pf,";ENTRADA POR CONSOLA\n");
+				if(strcmp(ultimoTipo, "STRING") == 0){
+					fprintf(pf,"\tgetString \t_%s\n",sacarDePila(&pilaASM)->cadena);
+				}else{
+					fprintf(pf,"\tgetFloat \t_%s\n",sacarDePila(&pilaASM)->cadena);
+				}
+		    }
 		
         	*pp=(*pp)->psig;
 		}
 
-		fprintf(pf,"mov ax, 4C00h\n\tint 21h\nend");
+		fprintf(pf,"\nmov ax, 4C00h\nint 21h\nend");
 		fclose(pf);
     }
 

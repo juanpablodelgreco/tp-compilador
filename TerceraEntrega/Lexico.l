@@ -107,11 +107,11 @@ BETWEEN "BETWEEN"|"between"
 {FLOAT}		    {printf("\nFloat: %s\n", yytext);return FLOAT;}
 {STRING}		{printf("\nString: %s\n", yytext);return STRING;}
 
-{CTE_INT}       {checkInteger(yytext); printf("\nConstante: %s\n", yytext); yylval.vals=strdup(yytext); pushSymbolTable(yytext,1,"INTEGER"); return CTE_INT;}
+{CTE_INT}       {checkInteger(yytext); printf("\nConstante int: %s\n", yytext); yylval.vals=strdup(yytext); pushSymbolTable(yytext,1,"INTEGER"); return CTE_INT;}
 
-{CTE_FLOAT}     {checkFloat(yytext); printf("\nConstante: %s\n", yytext); yylval.vals=strdup(yytext); pushSymbolTable(yytext,1,"FLOAT"); return CTE_FLOAT;} 
+{CTE_FLOAT}     {checkFloat(yytext); printf("\nConstante float: %s\n", yytext); yylval.vals=strdup(yytext); pushSymbolTable(yytext,1,"FLOAT"); return CTE_FLOAT;} 
 
-{CTE_STR}     {checkString(yytext); printf("\nConstante: %s\n", yytext); yylval.vals=strdup(yytext); pushSymbolTable(yytext,1,"STRING"); return CTE_STR;}
+{CTE_STR}     {checkString(yytext); printf("\nConstante str: %s\n", yytext); yylval.vals=strdup(yytext); pushSymbolTable(yytext,1,"STRING"); return CTE_STR;}
 
  
 {WRITE}     { printf("\nToken %s\n",yytext); return WRITE;}
@@ -192,7 +192,7 @@ void pushSymbolTable(char* str, int is_cte, char* stype){
     int i=0, duplicate=0;
     while(i<table_regs && i<MAX_REGS && !duplicate)
     {
-        if(!strcmp(symbol_table[i].lexeme,str)){
+        if(!strcmp(symbol_table[i].lexeme,auxCad)){
             duplicate = 1;
         }
         i++;
@@ -200,7 +200,13 @@ void pushSymbolTable(char* str, int is_cte, char* stype){
     if(!duplicate)
     {
         symbol_table[table_regs].length = strlen(str);
-        strcpy(symbol_table[table_regs].lexeme,str);
+        char* auxCad;
+        strcpy(auxCad,reemplazarCaracter(str,".","p"));
+        strcpy(auxCad,reemplazarCaracter(auxCad," ","_"));
+        strcpy(auxCad,reemplazarCaracter(auxCad,"\"",""));
+        printf("**********AUXCAD******\n");
+        printf(auxCad);
+        strcpy(symbol_table[table_regs].lexeme, auxCad);
         if(is_cte){
             strcpy(symbol_table[table_regs].value,str);
         }
@@ -208,20 +214,6 @@ void pushSymbolTable(char* str, int is_cte, char* stype){
         table_regs++;
     }
 };
-
-/*int main(int argc, char *argv[])
-{
-    if ((yyin = fopen(argv[1], "rt")) == NULL) {
-        printf("\nNo se puede abrir el archivo de prueba: %s\n", argv[1]);
-    } else { 
-    	yyparse();
-    }
-
-    // showSymbolTable(); Función para realizar el debug de la tabla de simbolos.
-    crear_TS();
-	fclose(yyin);
-  return 0;
-}*/
 
 void showSymbolTable(){
     int i;
@@ -265,7 +257,6 @@ int buscarEnTablaDeSimbolos(char* objetive){
 	return -1;
 }
 
-
 char * reemplazarCaracter(char const * const original,  char const * const pattern,  char const * const replacement)
 {
 	size_t const replen = strlen(replacement);
@@ -301,3 +292,4 @@ char * reemplazarCaracter(char const * const original,  char const * const patte
 	
 	return returned;
 }
+  
