@@ -16,5 +16,5 @@ if(BETWEEN(d,[2;9])) {
 else{
    f = AVG([9, 15*22, 9 + 8]);
 }
-WRITE "HOLA MUNDO";
+WRITE "FIN DE PROGRAMA";
 READ a;

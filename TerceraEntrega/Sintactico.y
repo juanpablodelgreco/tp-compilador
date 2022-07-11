@@ -89,7 +89,7 @@ t_pila pilaASM;
 /* funciones */
 void guardarPolaca(t_polaca*);
 int ponerEnPolacaNro(t_polaca*,int, char *);
-int ponerEnPolaca(t_polaca*, char *);
+int ponerEnPolaca(t_polaca*, char *, int);
 void crearPolaca(t_polaca*);
 char* obtenerSalto(enum tipoSalto);
 void generarAssembler(t_polaca*);
@@ -275,11 +275,11 @@ asignacion:
 		}
 		esAsignacion=1;
 		strcpy(tipoAsignacion,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].datatype);
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme,1);
 		}OP_AS expresion{
 			esAsignacion=0;
 			strcpy(tipoAsignacion,"VARIABLE");
-			ponerEnPolaca(&polaca,"=");
+			ponerEnPolaca(&polaca,"=",1);
 			} OP_ENDLINE {printf("ID = Expresion es ASIGNACION\n");}
 	;
 
@@ -300,14 +300,14 @@ expresion:
 			{
 				yyerrormsg("Operacion invalida en suma(Intenta asignar un numero a un string)");
 			}
-		}termino{ponerEnPolaca(&polaca,"+");} {printf("Expresion+Termino es Expresion\n");}
+		}termino{ponerEnPolaca(&polaca,"+",1);} {printf("Expresion+Termino es Expresion\n",1);}
 	| expresion OP_RES{
 			auxiliaresNecesarios++;
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 			{
 				yyerrormsg("Operacion invalida en resta(Intenta asignar un numero a un string)");
 			}
-		} termino{ponerEnPolaca(&polaca,"-");} {printf("Expresion-Termino es Expresion\n");}
+		} termino{ponerEnPolaca(&polaca,"-",1);} {printf("Expresion-Termino es Expresion\n",1);}
 	
 	;
 
@@ -319,14 +319,14 @@ termino:
 			{
 				yyerrormsg("Operacion invalida en multiplicacion(multiplica un numero a un string)");
 			}
-		} factor{ponerEnPolaca(&polaca,"*");} {printf(" Termino*Factor es Termino\n");}
+		} factor{ponerEnPolaca(&polaca,"*",1);} {printf(" Termino*Factor es Termino\n",1);}
    | termino OP_DIV{
 			auxiliaresNecesarios++;
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
 			{
 				yyerrormsg("Operacion invalida en division(Divide un numero a un string)");
 			}
-		} factor{ponerEnPolaca(&polaca,"/");} {printf(" Termino/Factor es Termino\n");}
+		} factor{ponerEnPolaca(&polaca,"/",1);} {printf(" Termino/Factor es Termino\n",1);}
    ;
    
 factor: 
@@ -344,14 +344,14 @@ factor:
         {
             yyerrormsg("Intenta asignar variable float a un int");
         }
-        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme,1);
         printf("    ID es Factor \n");}
     | CTE_INT{
         if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
         {
             yyerrormsg("Intenta asignar CTE de distinto tipo");
         }
-        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme,1);
         printf("    CTE es Factor\n");}
     | CTE_FLOAT{
         if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")==0)
@@ -362,14 +362,14 @@ factor:
         {
             yyerrormsg("Intenta asignar CTE float a un int");
         }
-        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);
+        ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme,1);
         printf("    CTE es Factor\n");}
 		| CTE_STR{
 			if(esAsignacion==1&&strcmp(tipoAsignacion,"STRING")!=0)
 			{
 				yyerrormsg("Operacion invalida, Intenta asignar un string a un numero");
 			}
-		} {ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme);printf("CTE_STR es Expresion\n");}
+		} {ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>1)].lexeme,1);printf("CTE_STR es Expresion\n");}
     | PA expresion PC {printf("    Expresion entre parentesis es Factor\n");}
     | funcion {printf("    funcion es Factor\n");}
     ;
@@ -396,7 +396,7 @@ elemento:
 	{
 		contadorAvg [avgNumero-1]++;
 		if(contadorAvg[avgNumero-1] > 1){
-			ponerEnPolaca(&polaca, "+");
+			ponerEnPolaca(&polaca, "+",1);
 			auxiliaresNecesarios++;
 		}
 	}
@@ -415,8 +415,8 @@ average:
 		avgNumero--;
 		char aux[20];
 		sprintf(aux, "%d", contadorAvg[avgNumero]);
-		ponerEnPolaca(&polaca, aux);
-		ponerEnPolaca(&polaca, "/");
+		ponerEnPolaca(&polaca, aux,1);
+		ponerEnPolaca(&polaca, "/",1);
 		auxiliaresNecesarios++;
 		printf(" AVG(lista) es Average\n");
 		esAvg=0;
@@ -430,15 +430,15 @@ between:
 			yyerrormsg("La variable de entrada debe ser de tipo INTEGER.");
 		}
 		strcpy(auxBetween,symbol_table[buscarEnTablaDeSimbolos($<vals>3)].lexeme);
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>3)].lexeme);
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>3)].lexeme,1);
 	}
 	COMA rango PC {printf(" BETWEEN(id,lista) es between\n");}
 	;
 
 	rango:	CA expresion OP_ENDLINE {
 		
-			ponerEnPolaca(&polaca,"CMP");
-			ponerEnPolaca(&polaca,"BLT");
+			ponerEnPolaca(&polaca,"CMP",1);
+			ponerEnPolaca(&polaca,"BLT",1);
 			t_info info;
 			info.salto1 = contadorPolaca;
 			if(isIf){
@@ -446,13 +446,13 @@ between:
 			}else{
 				ponerEnPila(&pilaWhile, &info);
 			}
-			ponerEnPolaca(&polaca,"");
-			ponerEnPolaca(&polaca,auxBetween);
+			ponerEnPolaca(&polaca,"",1);
+			ponerEnPolaca(&polaca,auxBetween,1);
 	} 
 	expresion CC
 	{
-		ponerEnPolaca(&polaca,"CMP");
-		ponerEnPolaca(&polaca,"BGT");
+		ponerEnPolaca(&polaca,"CMP",1);
+		ponerEnPolaca(&polaca,"BGT",1);
 		t_info info;
 		info.salto2 = contadorPolaca;
 		info.andOr = and;
@@ -462,26 +462,26 @@ between:
 		}else{
 			ponerEnPila(&pilaWhile, &info);
 		}
-		ponerEnPolaca(&polaca,"");
+		ponerEnPolaca(&polaca,"",1);
 	}
 	;
 
 write:
     WRITE CTE_STR {
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme);
-		ponerEnPolaca(&polaca,"WRITE");
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme,1);
+		ponerEnPolaca(&polaca,"WRITE",1);
 	} OP_ENDLINE
 	| WRITE ID {
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme);
-		ponerEnPolaca(&polaca,"WRITE");
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme,1);
+		ponerEnPolaca(&polaca,"WRITE",1);
 	}
 	OP_ENDLINE
     ;
 
 read: 
 	READ ID {
-		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme);
-		ponerEnPolaca(&polaca,"READ");
+		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>2)].lexeme,1);
+		ponerEnPolaca(&polaca,"READ",1);
 	} OP_ENDLINE
 	;
 
@@ -535,18 +535,18 @@ condicion:
 				switch(tipoCondicion)
 				{
 					case condicionIf:
-						ponerEnPolaca(&polaca,"CMP");
-						ponerEnPolaca(&polaca,obtenerSalto(inverso));
+						ponerEnPolaca(&polaca,"CMP",1);
+						ponerEnPolaca(&polaca,obtenerSalto(inverso),1);
 						topeDePila(&pilaIf)->salto1=contadorPolaca;
-						ponerEnPolaca(&polaca,"");
+						ponerEnPolaca(&polaca,"",1);
 						topeDePila(&pilaIf)->andOr = condicionSimple;
 						break;
 
 					case condicionWhile:
-						ponerEnPolaca(&polaca,"CMP");
-						ponerEnPolaca(&polaca,obtenerSalto(inverso));
+						ponerEnPolaca(&polaca,"CMP",1);
+						ponerEnPolaca(&polaca,obtenerSalto(inverso),1);
 						topeDePila(&pilaWhile)->salto1=contadorPolaca;
-						ponerEnPolaca(&polaca,"");
+						ponerEnPolaca(&polaca,"",1);
 						topeDePila(&pilaWhile)->andOr = condicionSimple;
 						break;
 				}
@@ -556,18 +556,18 @@ condicion:
 				switch(tipoCondicion)
 				{
 					case condicionIf:
-						ponerEnPolaca(&polaca,"CMP");
-						ponerEnPolaca(&polaca,obtenerSalto(normal));
+						ponerEnPolaca(&polaca,"CMP",1);
+						ponerEnPolaca(&polaca,obtenerSalto(normal),1);
 						topeDePila(&pilaIf)->salto1=contadorPolaca;
-						ponerEnPolaca(&polaca,"");
+						ponerEnPolaca(&polaca,"",1);
 						topeDePila(&pilaIf)->andOr = condicionSimple;
 						break;
 
 					case condicionWhile:
-						ponerEnPolaca(&polaca,"CMP");
-						ponerEnPolaca(&polaca,obtenerSalto(normal));
+						ponerEnPolaca(&polaca,"CMP",1);
+						ponerEnPolaca(&polaca,obtenerSalto(normal),1);
 						topeDePila(&pilaWhile)->salto1=contadorPolaca;
-						ponerEnPolaca(&polaca,"");
+						ponerEnPolaca(&polaca,"",1);
 						topeDePila(&pilaWhile)->andOr = condicionSimple;
 						break;
 				}
@@ -579,18 +579,17 @@ condicion:
 					case condicionIf:
 						switch(ultimoOperadorLogico){
 							case and:
-								ponerEnPolaca(&polaca,"CMP");
-								ponerEnPolaca(&polaca,obtenerSalto(inverso));
+								ponerEnPolaca(&polaca,"CMP",1);
+								ponerEnPolaca(&polaca,obtenerSalto(inverso),1);
 								topeDePila(&pilaIf)->salto1=contadorPolaca;
-								ponerEnPolaca(&polaca,"");
-								printf("%d", topeDePila(&pilaIf)->salto1);
+								ponerEnPolaca(&polaca,"",1);
 								topeDePila(&pilaIf)->andOr = and;
 								break;
 							case or:
-								ponerEnPolaca(&polaca,"CMP");
-								ponerEnPolaca(&polaca,obtenerSalto(normal));
+								ponerEnPolaca(&polaca,"CMP",1);
+								ponerEnPolaca(&polaca,obtenerSalto(normal),1);
 								topeDePila(&pilaIf)->salto1=contadorPolaca;
-								ponerEnPolaca(&polaca,"");
+								ponerEnPolaca(&polaca,"",1);
 								topeDePila(&pilaIf)->andOr = or;
 								break;
 						}
@@ -599,18 +598,18 @@ condicion:
 					case condicionWhile:
 						switch(ultimoOperadorLogico){
 							case and:
-								ponerEnPolaca(&polaca,"CMP");
-								ponerEnPolaca(&polaca,obtenerSalto(inverso));
+								ponerEnPolaca(&polaca,"CMP",1);
+								ponerEnPolaca(&polaca,obtenerSalto(inverso),1);
 								topeDePila(&pilaWhile)->salto1=contadorPolaca;
-								ponerEnPolaca(&polaca,"");
+								ponerEnPolaca(&polaca,"",1);
 								topeDePila(&pilaWhile)->andOr = and;
 								break;
 
 							case or:
-								ponerEnPolaca(&polaca,"CMP");
-								ponerEnPolaca(&polaca,obtenerSalto(normal));
+								ponerEnPolaca(&polaca,"CMP",1);
+								ponerEnPolaca(&polaca,obtenerSalto(normal),1);
 								topeDePila(&pilaWhile)->salto1=contadorPolaca;
-								ponerEnPolaca(&polaca,"");
+								ponerEnPolaca(&polaca,"",1);
 								topeDePila(&pilaWhile)->andOr = or;
 								break;
 						}
@@ -622,10 +621,10 @@ condicion:
 					switch(tipoCondicion)
 					{
 						case condicionIf:
-							ponerEnPolaca(&polaca,"CMP");
-							ponerEnPolaca(&polaca,obtenerSalto(inverso));
+							ponerEnPolaca(&polaca,"CMP",1);
+							ponerEnPolaca(&polaca,obtenerSalto(inverso),1);
 							topeDePila(&pilaIf)->salto2=contadorPolaca;
-							ponerEnPolaca(&polaca,"");
+							ponerEnPolaca(&polaca,"",1);
 							if(topeDePila(&pilaIf)->andOr == or){
 								char aux[20];
 								sprintf(aux, "%d", contadorPolaca);
@@ -634,10 +633,10 @@ condicion:
 							break;
 
 						case condicionWhile:
-							ponerEnPolaca(&polaca,"CMP");
-							ponerEnPolaca(&polaca,obtenerSalto(inverso));
+							ponerEnPolaca(&polaca,"CMP",1);
+							ponerEnPolaca(&polaca,obtenerSalto(inverso),1);
 							topeDePila(&pilaWhile)->salto2=contadorPolaca;
-							ponerEnPolaca(&polaca,"");
+							ponerEnPolaca(&polaca,"",1);
 							if(topeDePila(&pilaWhile)->andOr == or){
 								char aux[20];
 								sprintf(aux, "%d", contadorPolaca);
@@ -658,15 +657,15 @@ while:
 			info.saltoElse=contadorPolaca;
 			ponerEnPila(&pilaWhile,&info);
 			tipoCondicion=condicionWhile;
-			ponerEnPolaca(&polaca,"");
-			ponerEnPolaca(&polaca,"ET");
+			ponerEnPolaca(&polaca,"",1);
+			ponerEnPolaca(&polaca,"ET",1);
 		} 
 		PA condicion PC bloque_ejecucion	
 		{
 			char aux[20];
 			sprintf(aux, "%d", topeDePila(&pilaWhile)->saltoElse);
-			ponerEnPolaca(&polaca,"BI");
-			ponerEnPolaca(&polaca, aux);
+			ponerEnPolaca(&polaca,"BI",1);
+			ponerEnPolaca(&polaca, aux,1);
 			sprintf(aux, "%d", contadorPolaca);
 			switch (topeDePila(&pilaWhile)->andOr)
 			{
@@ -677,13 +676,14 @@ while:
 				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto1, aux);
 				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto2, aux);
 			case or:
+				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto1, aux);
 				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto2, aux);
 				break;
 			}
 			char aux2[20];
 			strcpy(aux2, "#");
 			strcat(aux2, aux);
-			ponerEnPolaca(&polaca, aux2);
+			ponerEnPolaca(&polaca, aux2,1);
 			char aux3[20];
 			sprintf(aux3, "#%d", topeDePila(&pilaWhile)->saltoElse);
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->saltoElse, aux3);
@@ -720,13 +720,14 @@ else:
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
 		case or:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
 			break;
 		}
 		char aux2[CADENA_MAXIMA];
 		strcpy(aux2, "#");
 		strcat(aux2, aux);
-		ponerEnPolaca(&polaca, aux2);
+		ponerEnPolaca(&polaca, aux2,1);
 	}
 	bloque_ejecucion
 	{
@@ -737,7 +738,7 @@ else:
 		char aux2[20];
 		strcpy(aux2, "#");
 		strcat(aux2, aux);
-		ponerEnPolaca(&polaca, aux2);
+		ponerEnPolaca(&polaca, aux2,1);
 	}
 	;
 
@@ -760,6 +761,7 @@ resto:
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
 			break;
 		case or:
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
 			break;
 		}
@@ -767,9 +769,9 @@ resto:
 	| bloque_ejecucion
 	{
 		char aux[20];
-		ponerEnPolaca(&polaca,"BI");
+		ponerEnPolaca(&polaca,"BI",1);
 		topeDePila(&pilaIf)->saltoElse = contadorPolaca;
-		ponerEnPolaca(&polaca, "");
+		ponerEnPolaca(&polaca, "",1);
 		if(topeDePila(&pilaIf)->andOr != or){
 			sprintf(aux, "%d", contadorPolaca);
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto1, aux);
@@ -800,9 +802,12 @@ void crearPolaca(t_polaca* pp)
     *pp=NULL;
 }
 
-int ponerEnPolaca(t_polaca* pp, char *cadena)
+int ponerEnPolaca(t_polaca* pp, char *cadena, int msg)
 {
-	printf("ponerEnPolaca: cadena %s\n",cadena);
+	if(msg == 1){
+		printf("ponerEnPolaca: cadena %s\n",cadena);
+	}
+	
     t_nodoPolaca* pn = (t_nodoPolaca*)malloc(sizeof(t_nodoPolaca));
     if(!pn)
     {
@@ -861,7 +866,7 @@ void guardarPolaca(t_polaca* pp)
 	while(*pp)
     {	
         pn=*pp;
-		ponerEnPolaca(&polacaASM, pn->info.cadena);
+		ponerEnPolaca(&polacaASM, pn->info.cadena, 0);
         fprintf(pt, "%s\n",pn->info.cadena);
 	  	*pp=(*pp)->psig;
         free(pn);
@@ -963,7 +968,6 @@ int main(int argc, char *argv[])
     	yyparse();
     }
 	
-    // showSymbolTable(); Función para realizar el debug de la tabla de simbolos.
     crear_TS();
 	fclose(yyin);
 	guardarPolaca(&polaca);
@@ -973,7 +977,7 @@ int main(int argc, char *argv[])
   	return 0;
 }
 
-/*Generación de assembler*/
+/* GENERACIÓN DE ASSEMBLER */
 void generarAssembler(t_polaca* pp)
 {
 	t_nodoPolaca* auxPolaca;
@@ -987,7 +991,7 @@ void generarAssembler(t_polaca* pp)
 	char ultimaCadena[CADENA_MAXIMA];
 	int huboAsignacion=TRUE;
 	int huboSalto=FALSE;
-	pf = fopen("final.asm", "w");
+	pf = fopen("Final.asm", "w");
 
 	fprintf(pf, "\nINCLUDE macros2.asm\t\t;Biblioteca\n");
     fprintf(pf, "INCLUDE number.asm\t\t;Biblioteca\n");
@@ -1050,7 +1054,7 @@ void generarAssembler(t_polaca* pp)
 			int pos;
 			strcpy(linea, auxPolaca->info.cadena);
 
-	    	//VARIABLES
+	    	// VARIABLES
 	    	if((pos=buscarEnTablaDeSimbolos(linea))!=ERROR 
 			&& (strcmp(symbol_table[pos].value, "") == 0 
 			|| atoi((symbol_table[pos]).value) == 0) 
@@ -1072,7 +1076,7 @@ void generarAssembler(t_polaca* pp)
 				strcpy(ultimoTipo, info.dataType);
 		    }
 		
-			//CONSTANTES
+			// CONSTANTES
 	    	if((pos=buscarEnTablaDeSimbolos(linea))!=ERROR 
 			&& (strcmp(symbol_table[pos].value, "") != 0 
 			|| atoi((symbol_table[pos]).value) != 0) 
@@ -1094,7 +1098,7 @@ void generarAssembler(t_polaca* pp)
 		    	strcpy(ultimoTipo, info2.dataType);
 		    }
 		
-	    	// operadores aritméticos
+	    	// MULTIPLICACIÓN
 		    if(strcmp(linea, "*") == 0 )
 		    {
 				t_info *op1=sacarDePila(&pilaASM);
@@ -1132,6 +1136,7 @@ void generarAssembler(t_polaca* pp)
 				}
 			}
 	
+			// SUMA
 		    if(strcmp(linea, "+") == 0 )
 		    {
 				t_info *op1=sacarDePila(&pilaASM);
@@ -1170,6 +1175,7 @@ void generarAssembler(t_polaca* pp)
 				}
 			}
 
+			// DIVISIÓN
 			if(strcmp(linea, "/") == 0 )
 		    {
 				t_info *op1=sacarDePila(&pilaASM);
@@ -1207,6 +1213,7 @@ void generarAssembler(t_polaca* pp)
 				}
 			}
 
+			// RESTA
 			if(strcmp(linea, "-") == 0 )
 		    {
 				t_info *op1=sacarDePila(&pilaASM);
@@ -1246,7 +1253,7 @@ void generarAssembler(t_polaca* pp)
 				}
 			}
 
-			// comparadores
+			// COMPARADORES
 			if(strcmp(linea, "CMP") == 0)
 			{
 				t_info *op1= sacarDePila(&pilaASM);
@@ -1261,10 +1268,7 @@ void generarAssembler(t_polaca* pp)
 				{	
 					fprintf(pf,"\tfild \t_%s\n", op1->cadena);
 					fprintf(pf,"\tfild \t_%s\n", op2->cadena);
-				}/*else if(strcmp(op1->dataType, "STRING") == 0){
-					fprintf(pf,"\t_%s\n", op1->cadena);
-					fprintf(pf,"\t_%s\n", op2->cadena);
-				}*/
+				}
 			}
 		
 			if(huboSalto == TRUE){
@@ -1320,22 +1324,13 @@ void generarAssembler(t_polaca* pp)
 				huboSalto=TRUE;
 			}
 
-			// saltos
-			if(strcmp(linea, "$") == 0)
-			{
-				t_info info;
-				info.cadena=(char*)malloc(sizeof(char)*CADENA_MAXIMA);
-		    	strcpy(info.cadena,(const char*)reemplazarCaracter(linea,"$",""));
-		    	ponerEnPila(&pilaASM,&info);
-			}
-
-				// etiquetas
+			// ETIQUETAS
 			if(strchr(linea, '#') != 0)
 			{
 				fprintf(pf,"ET_%s:\n",reemplazarCaracter(linea,"#",""));
 			}
 
-			// asignación
+			// ASIGNACIÓN
 			if(strcmp(linea, "=") == 0)
 			{	
 				if(strcmp(ultimoTipo, "STRING") == 0){
@@ -1363,11 +1358,10 @@ void generarAssembler(t_polaca* pp)
 				}
 			}
 
-			//WRITE
+			// WRITE
 			if(strcmp(linea,"WRITE")==0)
 			{
 				fprintf(pf,";SALIDA POR CONSOLA\n");
-				printf(ultimoTipo);
 				if(strcmp(ultimoTipo, "INTEGER") == 0){
 					fprintf(pf,"\tdisplayInteger \t_%s,3\n\tnewLine 1\n",sacarDePila(&pilaASM)->cadena);	
 				}else if(strcmp(ultimoTipo, "FLOAT") == 0){
@@ -1377,7 +1371,7 @@ void generarAssembler(t_polaca* pp)
 				}
 			}
 
-			//READ
+			// READ
 			if(strcmp(linea,"READ")==0)
 			{
 				fprintf(pf,";ENTRADA POR CONSOLA\n");
