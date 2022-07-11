@@ -431,7 +431,6 @@ between:
 		}
 		strcpy(auxBetween,symbol_table[buscarEnTablaDeSimbolos($<vals>3)].lexeme);
 		ponerEnPolaca(&polaca,symbol_table[buscarEnTablaDeSimbolos($<vals>3)].lexeme);
-
 	}
 	COMA rango PC {printf(" BETWEEN(id,lista) es between\n");}
 	;
@@ -454,11 +453,14 @@ between:
 	{
 		ponerEnPolaca(&polaca,"CMP");
 		ponerEnPolaca(&polaca,"BGT");
+		t_info info;
+		info.salto2 = contadorPolaca;
+		info.andOr = and;
 		if(isIf){
-			topeDePila(&pilaIf)->salto2 = contadorPolaca;
+			ponerEnPila(&pilaIf, &info);
 			isIf=0;
 		}else{
-			topeDePila(&pilaWhile)->salto2 = contadorPolaca;
+			ponerEnPila(&pilaWhile, &info);
 		}
 		ponerEnPolaca(&polaca,"");
 	}
@@ -656,6 +658,7 @@ while:
 			info.saltoElse=contadorPolaca;
 			ponerEnPila(&pilaWhile,&info);
 			tipoCondicion=condicionWhile;
+			ponerEnPolaca(&polaca,"");
 			ponerEnPolaca(&polaca,"ET");
 		} 
 		PA condicion PC bloque_ejecucion	
@@ -677,7 +680,13 @@ while:
 				ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->salto2, aux);
 				break;
 			}
-			sacarDePila(&pilaWhile);
+			char aux2[20];
+			strcpy(aux2, "#");
+			strcat(aux2, aux);
+			ponerEnPolaca(&polaca, aux2);
+			char aux3[20];
+			sprintf(aux3, "#%d", topeDePila(&pilaWhile)->saltoElse);
+			ponerEnPolacaNro(&polaca, topeDePila(&pilaWhile)->saltoElse, aux3);
 		}
 	;
 
@@ -714,6 +723,10 @@ else:
 			ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->salto2, aux);
 			break;
 		}
+		char aux2[CADENA_MAXIMA];
+		strcpy(aux2, "#");
+		strcat(aux2, aux);
+		ponerEnPolaca(&polaca, aux2);
 	}
 	bloque_ejecucion
 	{
@@ -721,6 +734,10 @@ else:
 		char aux[20];
 		sprintf(aux, "%d", contadorPolaca);
 		ponerEnPolacaNro(&polaca, topeDePila(&pilaIf)->saltoElse, aux);
+		char aux2[20];
+		strcpy(aux2, "#");
+		strcat(aux2, aux);
+		ponerEnPolaca(&polaca, aux2);
 	}
 	;
 
@@ -1310,6 +1327,12 @@ void generarAssembler(t_polaca* pp)
 				info.cadena=(char*)malloc(sizeof(char)*CADENA_MAXIMA);
 		    	strcpy(info.cadena,(const char*)reemplazarCaracter(linea,"$",""));
 		    	ponerEnPila(&pilaASM,&info);
+			}
+
+				// etiquetas
+			if(strchr(linea, '#') != 0)
+			{
+				fprintf(pf,"ET_%s:\n",reemplazarCaracter(linea,"#",""));
 			}
 
 			// asignación

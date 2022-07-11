@@ -193,7 +193,7 @@ void pushSymbolTable(char* str, int is_cte, char* stype){
     int i=0, duplicate=0;
     while(i<table_regs && i<MAX_REGS && !duplicate)
     {
-        if(!strcmp(symbol_table[i].lexeme,str)){
+        if(!strcmp(symbol_table[i].lexeme,normalizar(str))){
             duplicate = 1;
         }
         i++;
